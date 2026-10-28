@@ -115,7 +115,7 @@
             }
         }
 
-        /* LCARS Controls & Styling */
+        /* LCARS Pill Buttons & Curves */
         .lcars-pill, .lcars-btn {
             border-radius: 20px;
             transition: all 0.15s ease-in-out;
@@ -152,16 +152,16 @@
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #CC99CC; border-radius: 4px; }
 
-        /* Red Alert Pulse */
+        /* Red Alert Visual FX */
+        .red-alert-active {
+            animation: redAlertPulse 1.2s infinite ease-in-out;
+            border: 2px solid #FF3333 !important;
+        }
+
         @keyframes redAlertPulse {
             0% { box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.4); border-color: #FF3333; }
             50% { box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.9); border-color: #FF0000; }
             100% { box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.4); border-color: #FF3333; }
-        }
-
-        .red-alert-active {
-            animation: redAlertPulse 1.2s infinite ease-in-out;
-            border: 2px solid #FF3333 !important;
         }
 
         .lcars-panel-border {
@@ -246,7 +246,7 @@
                 </div>
                 <div class="flex-grow flex flex-col gap-1">
                     <div class="h-8 bg-[var(--lcars-orange)] rounded-r-full flex items-center px-4 justify-between">
-                        <span class="text-black text-lg font-bold tracking-widest">USS NAUTILUS • DECK MAP & DIAGNOSTICS</span>
+                        <span class="text-black text-lg font-bold tracking-widest">USS NAUTILUS • NCC-73515 • DECK MAP & DIAGNOSTICS</span>
                         <div class="flex items-center gap-3">
                             <span class="text-black font-mono text-xs">CYCLE: <span id="overview-cycle-display" class="font-bold">1</span></span>
                             <button onclick="switchView('main')" class="bg-black text-lcars-orange px-3 py-0.5 rounded-full text-xs font-bold hover:bg-neutral-800">◀ MAIN MENU</button>
@@ -259,13 +259,14 @@
                 <!-- Sidebar Nav -->
                 <div class="w-48 flex flex-col gap-2 shrink-0">
                     <div class="bg-[var(--lcars-peach)] text-black font-bold p-1.5 text-center rounded-l-full rounded-r-md text-base">DECK NAV</div>
+                    <button onclick="switchView('overview')" class="lcars-btn bg-lcars-orange text-black font-bold text-xs py-1.5 px-3 text-left">PRIMARY SCHEMATIC</button>
                     <button onclick="openModal('bridgeModal')" class="lcars-btn bg-lcars-blue text-black font-bold text-xs py-1.5 px-3 text-left">01 MAIN BRIDGE</button>
                     <button onclick="openModal('scienceModal')" class="lcars-btn bg-lcars-gold text-black font-bold text-xs py-1.5 px-3 text-left">04 SCIENCE LABS</button>
                     <button onclick="openModal('torpedoModal')" class="lcars-btn bg-lcars-red text-white font-bold text-xs py-1.5 px-3 text-left">06 TORPEDO BAYS</button>
                     <button onclick="openModal('shuttleModal')" class="lcars-btn bg-lcars-lavender text-black font-bold text-xs py-1.5 px-3 text-left">10 MAIN SHUTTLEBAY</button>
                     <button onclick="openModal('engineeringModal')" class="lcars-btn bg-lcars-peach text-black font-bold text-xs py-1.5 px-3 text-left">12 MAIN ENGINEERING</button>
 
-                    <!-- Phase Cycle Controls -->
+                    <!-- Phase Cycle Control Box -->
                     <div class="bg-[var(--lcars-tangerine)] p-2 rounded-xl text-black flex flex-col gap-1 mt-1 border-2 border-amber-400">
                         <div class="font-bold text-center text-[11px]">PHASE CYCLE CONTROL</div>
                         <div class="flex items-center gap-1">
@@ -281,21 +282,24 @@
                         <button onclick="executePhaseCycles()" class="lcars-btn bg-lcars-gold text-black py-1 text-xs font-black">EXECUTE CYCLES</button>
                     </div>
 
-                    <!-- Live Shared Resources Sidebar Box -->
+                    <!-- Vessel Condition Live Stats -->
                     <div class="mt-auto bg-[var(--lcars-purple)] p-2 rounded-t-xl flex flex-col gap-1 text-black text-xs">
                         <div class="font-bold border-b border-black pb-0.5">VESSEL CONDITION</div>
-                        <div class="flex justify-between"><span>HULL:</span><span id="overview-hull">84%</span></div>
+                        <div class="flex justify-between"><span>HULL INTEGRITY:</span><span id="overview-hull">84%</span></div>
                         <div class="flex justify-between"><span>R-MATS:</span><span id="overview-rmats">500</span></div>
                         <div class="flex justify-between"><span>TORPEDOES:</span><span id="overview-torps">188</span></div>
+                        <div class="flex justify-between"><span>ACTIVE TEAMS:</span><span id="overview-teams">0</span></div>
                     </div>
                 </div>
 
-                <!-- Main SVG Cross-Section Map -->
+                <!-- Main SVG Section -->
                 <div class="flex-grow bg-black lcars-panel-border p-2 flex flex-col relative overflow-hidden">
                     <div class="flex justify-between items-center mb-1 border-b border-[var(--lcars-orange)] pb-1">
                         <span class="text-[var(--lcars-orange)] font-bold text-base">CROSS-SECTION DECK ALLOCATION MAP</span>
                         <div class="flex gap-2">
                             <button onclick="fabricateTorpedoes(5)" class="lcars-btn bg-lcars-gold text-black py-0.5 px-3 text-xs font-bold">+5 TORPEDOES (-50 R-MAT)</button>
+                            <button onclick="resetShipStatus()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">RANDOMIZE DAMAGE</button>
+                            <button onclick="repairAllRooms()" class="lcars-btn bg-lcars-gold text-black py-0.5 px-3 text-xs">REPAIR ALL</button>
                         </div>
                     </div>
 
@@ -306,7 +310,6 @@
                             </pattern>
                             <rect width="1000" height="500" fill="url(#lcars-grid)" />
 
-                            <!-- Akira Class Hull Wireframe -->
                             <g stroke="#ff9900" stroke-width="1.5" fill="none" opacity="0.4">
                                 <path d="M 250 150 C 400 120, 650 120, 750 170 C 820 200, 850 250, 750 300 C 650 350, 400 350, 250 320 Z"/>
                                 <path d="M 400 135 L 450 70 L 650 70 L 700 135 Z"/>
@@ -314,10 +317,8 @@
                                 <path d="M 100 390 L 350 340 L 320 310 L 80 360 Z"/>
                             </g>
 
-                            <!-- Interactive Rooms Group -->
                             <g id="rooms-group"></g>
 
-                            <!-- Deck Annotations -->
                             <g font-size="10" fill="#ffcc00" font-family="Antonio">
                                 <text x="860" y="85">DECK 01 - CATAMARAN / BRIDGE</text>
                                 <text x="860" y="125">DECK 03 - TAC COMMAND</text>
@@ -368,18 +369,26 @@
             <div class="grid grid-cols-12 gap-3 flex-1 overflow-y-auto">
                 <div class="col-span-4 flex flex-col gap-2">
                     <div class="bg-lcars-deeporange text-black p-3 rounded-tr-xl rounded-bl-xl font-bold text-xs space-y-1">
-                        <div>RESOURCE MANIFEST</div>
-                        <div class="flex justify-between text-sm"><span>REPLICATOR MATS:</span><span id="ops-rmats-val" class="font-mono">500</span></div>
-                        <div class="flex justify-between text-sm"><span>PHOTON TORPEDOES:</span><span id="ops-photons-val" class="font-mono">100</span></div>
-                        <div class="flex justify-between text-sm"><span>QUANTUM TORPEDOES:</span><span id="ops-quantums-val" class="font-mono">88</span></div>
+                        <div class="text-sm">RESOURCE MANIFEST</div>
+                        <div class="flex justify-between text-xs"><span>REPLICATOR MATS:</span><span id="ops-rmats-val" class="font-mono text-white">500</span></div>
+                        <div class="flex justify-between text-xs"><span>PHOTON TORPEDOES:</span><span id="ops-photons-val" class="font-mono text-white">100</span></div>
+                        <div class="flex justify-between text-xs"><span>QUANTUM TORPEDOES:</span><span id="ops-quantums-val" class="font-mono text-white">88</span></div>
+                        <div class="flex justify-between text-xs"><span>SHUTTLES:</span><span id="ops-shuttles-val" class="font-mono text-white">3</span></div>
+                        <div class="flex justify-between text-xs"><span>FIGHTERS:</span><span id="ops-fighters-val" class="font-mono text-white">6</span></div>
                     </div>
 
                     <div class="bg-neutral-950 border-l-4 border-lcars-purple p-3 rounded-r-lg font-mono text-xs space-y-2">
-                        <div class="text-lcars-purple font-bold font-sans">TORPEDO FABRICATION</div>
+                        <div class="text-lcars-purple font-bold font-sans text-sm">TORPEDO FABRICATION</div>
                         <p class="text-[10px] text-gray-400">COST: 10 R-MATS PER TORPEDO (BATCH OF 5 = 50 R-MATS)</p>
                         <button onclick="fabricateTorpedoes(5)" class="w-full lcars-btn bg-lcars-gold text-black py-2 font-bold text-xs">
                             FABRICATE +5 BATCH (-50 R-MAT)
                         </button>
+                    </div>
+
+                    <div class="bg-neutral-950 border-l-4 border-lcars-blue p-3 rounded-r-lg font-mono text-xs space-y-1">
+                        <div class="text-lcars-blue font-bold font-sans text-sm">AKIRA TACTICAL STATUS</div>
+                        <div class="flex justify-between"><span class="text-gray-400">REGISTRY:</span><span class="text-lcars-yellow font-bold">NCC-73515</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">SHIELDS:</span><span class="text-lcars-orange font-bold">100% NOMINAL</span></div>
                     </div>
                 </div>
 
@@ -393,13 +402,24 @@
                             <div id="ops-hull-bar" class="h-full bg-lcars-cyan rounded-full transition-all duration-300" style="width: 84%;"></div>
                         </div>
                     </div>
+
+                    <!-- Quick Command Panel -->
+                    <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-3 space-y-2">
+                        <span class="text-sm font-bold text-lcars-purple">QUICK COMMAND DIRECTIVES</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="openModal('torpedoModal')" class="lcars-btn bg-lcars-red text-white py-2 text-xs font-bold">OPEN TACTICAL TORPEDO PODS</button>
+                            <button onclick="openModal('shuttleModal')" class="lcars-btn bg-lcars-lavender text-black py-2 text-xs font-bold">OPEN SHUTTLEBAY CONTROL</button>
+                            <button onclick="openModal('engineeringModal')" class="lcars-btn bg-lcars-peach text-black py-2 text-xs font-bold">OPEN ENGINEERING REPAIR TEAMS</button>
+                            <button onclick="openModal('scienceModal')" class="lcars-btn bg-lcars-gold text-black py-2 text-xs font-bold">OPEN SCIENCE LAB MATRIX</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
 
         <!-- ===================================================================
-             VIEW 4: CAPTAIN'S PADD (CAPT. ADAM WINFIELD)
+             VIEW 4: CAPTAIN'S PADD (CAPT. ADAM WINFIELD DOSSIER & ROLLER)
              =================================================================== -->
         <div id="view-padd" class="w-full h-full hidden flex-col justify-between overflow-y-auto pr-1">
             <header class="grid grid-cols-12 gap-2 items-stretch mb-2 shrink-0">
@@ -421,7 +441,7 @@
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-1 mt-1 justify-end">
-                        <button onclick="toggleAudio()" id="audio-toggle-btn" class="lcars-btn bg-sky-400 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
+                        <button onclick="toggleAudioMute()" id="audio-toggle-btn-padd" class="lcars-btn bg-sky-400 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
                             <i class="fas fa-volume-up"></i> AUDIO: ON
                         </button>
                         <button onclick="toggleRedAlert()" id="red-alert-btn" class="lcars-btn bg-red-600 text-white text-[10px] px-2 py-0.5 font-bold rounded-full">
@@ -430,6 +450,10 @@
                         <button onclick="exportData()" class="lcars-btn bg-purple-400 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
                             <i class="fas fa-download"></i> EXPORT
                         </button>
+                        <label class="lcars-btn bg-amber-400 text-black text-[10px] px-2 py-0.5 font-bold rounded-full cursor-pointer">
+                            <i class="fas fa-upload"></i> IMPORT
+                            <input type="file" id="import-file" class="hidden" onchange="importData(event)" accept=".json">
+                        </label>
                         <button onclick="resetCharacterData()" class="lcars-btn bg-red-500 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
                             <i class="fas fa-undo"></i> RESET
                         </button>
@@ -456,80 +480,207 @@
                         <div class="flex justify-between"><span>NAME:</span> <span id="quick-name" class="text-white"></span></div>
                         <div class="flex justify-between"><span>RANK:</span> <span id="quick-rank" class="text-white"></span></div>
                         <div class="flex justify-between"><span>HEALTH:</span> <span id="quick-hp" class="text-sky-300 font-bold"></span></div>
+                        <div class="flex justify-between"><span>MOMENTUM:</span> <span id="quick-momentum" class="text-purple-300 font-bold"></span></div>
                     </div>
                 </div>
 
                 <div class="col-span-9 bg-gray-950 border-t-2 border-l-2 border-amber-500 rounded-tr-2xl p-3 flex flex-col justify-between overflow-y-auto">
                     
-                    <!-- DOSSIER TAB -->
-                    <div id="view-dossier" class="tab-view space-y-3">
+                    <!-- TAB 1: DOSSIER & CHARACTER STATS -->
+                    <div id="view-dossier" class="tab-view space-y-4">
                         <div class="flex justify-between items-center bg-gray-900 p-3 border-l-4 border-purple-400 rounded-r-lg">
                             <div>
                                 <h2 id="char-name" class="text-xl font-bold text-amber-400">ADAM WINFIELD</h2>
                                 <p class="text-sky-300 text-xs"><span id="char-rank">COMMANDER</span> | <span id="char-assignment">COMMANDING OFFICER</span></p>
                             </div>
-                            <div class="text-right text-[10px] text-gray-400">
+                            <div class="text-right text-[10px] text-gray-400 space-y-0.5">
                                 <div>SPECIES: <span id="char-species" class="text-amber-400 font-bold">HUMAN</span></div>
+                                <div>ENVIRONMENT: <span id="char-environment" class="text-white">HOMEWORLD</span></div>
+                                <div>CAREER: <span id="char-career" class="text-white">EXPERIENCED</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Rank Control -->
+                        <div class="bg-gray-900 p-3 rounded-xl border border-amber-500/40 space-y-2">
+                            <div class="flex justify-between items-center border-b border-amber-500/50 pb-1">
+                                <span class="text-xs font-bold text-amber-400"><i class="fas fa-award mr-1"></i>STARFLEET RANK & COMMENDATION</span>
+                                <span id="current-rank-display" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-black">COMMANDER</span>
+                            </div>
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-8">
+                                    <select id="rank-select-dropdown" onchange="setRankFromSelect(this.value)" class="w-full bg-black border border-amber-500 text-amber-300 p-1 text-xs rounded font-bold uppercase"></select>
+                                </div>
+                                <div class="col-span-4 flex gap-1">
+                                    <button onclick="promoteDemoteRank(-1)" class="flex-1 lcars-btn bg-red-600 text-white text-[10px] py-1 font-bold">DEMOTE</button>
+                                    <button onclick="promoteDemoteRank(1)" class="flex-1 lcars-btn bg-green-600 text-white text-[10px] py-1 font-bold">PROMOTE</button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Vitals -->
-                        <div class="bg-gray-900 p-3 rounded-lg border border-sky-500/30 space-y-2">
-                            <div class="flex justify-between text-xs font-bold">
-                                <span class="text-gray-300">STRESS / HP</span>
-                                <span id="hp-text-display" class="text-amber-400">12 / 12 HP</span>
+                        <div class="bg-gray-900 p-3 rounded-xl border border-sky-500/30 space-y-2">
+                            <div class="flex justify-between items-center border-b border-sky-500/50 pb-1">
+                                <span class="text-xs font-bold text-sky-400"><i class="fas fa-heartbeat mr-1"></i>VITALS & HEALTH STATUS</span>
+                                <span id="hp-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500 text-black">NOMINAL</span>
                             </div>
-                            <div class="w-full bg-gray-800 h-4 rounded-full overflow-hidden p-0.5 border border-gray-700">
-                                <div id="hp-bar-fill" class="h-full bg-sky-400 rounded-full" style="width: 100%;"></div>
+                            <div class="grid grid-cols-12 gap-2 items-center">
+                                <div class="col-span-8 space-y-1">
+                                    <div class="flex justify-between text-[10px] font-bold">
+                                        <span class="text-gray-300">STRESS / HP</span>
+                                        <span id="hp-text-display" class="text-amber-400">12 / 12 HP</span>
+                                    </div>
+                                    <div class="w-full bg-gray-800 h-4 rounded-full overflow-hidden p-0.5 border border-gray-700">
+                                        <div id="hp-bar-fill" class="h-full bg-sky-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+                                    </div>
+                                </div>
+                                <div class="col-span-4 flex gap-1">
+                                    <button onclick="adjustHP(-1)" class="flex-1 lcars-btn bg-red-600 text-white text-[10px] py-1 font-bold">-DMG</button>
+                                    <button onclick="adjustHP(1)" class="flex-1 lcars-btn bg-green-600 text-white text-[10px] py-1 font-bold">+HEAL</button>
+                                    <button onclick="fullRestHP()" class="flex-1 lcars-btn bg-sky-400 text-black text-[10px] py-1 font-bold">REST</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <div class="bg-gray-950 p-2 rounded border border-purple-500/40 flex justify-between items-center text-xs">
+                                    <span class="text-purple-300">MOMENTUM: <b id="momentum-val" class="text-purple-400">6</b></span>
+                                    <div class="flex gap-1">
+                                        <button onclick="adjustCounter('momentum', -1)" class="px-2 bg-gray-800 text-amber-400 rounded font-bold">-</button>
+                                        <button onclick="adjustCounter('momentum', 1)" class="px-2 bg-gray-800 text-amber-400 rounded font-bold">+</button>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-950 p-2 rounded border border-amber-500/40 flex justify-between items-center text-xs">
+                                    <span class="text-amber-300">DETERMINATION: <b id="determination-val" class="text-amber-400">3</b></span>
+                                    <div class="flex gap-1">
+                                        <button onclick="adjustCounter('determination', -1)" class="px-2 bg-gray-800 text-amber-400 rounded font-bold">-</button>
+                                        <button onclick="adjustCounter('determination', 1)" class="px-2 bg-gray-800 text-amber-400 rounded font-bold">+</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Attributes & Disciplines Grid -->
-                        <div class="grid grid-cols-2 gap-3 text-xs">
-                            <div class="bg-gray-900 p-3 rounded-lg border border-amber-500/30">
-                                <h3 class="font-bold text-amber-400 border-b border-amber-500/50 pb-1 mb-2">ATTRIBUTES</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-gray-900 p-3 rounded-xl border border-amber-500/30">
+                                <h3 class="text-xs font-bold text-amber-400 border-b border-amber-500/50 pb-1 mb-2">ATTRIBUTES</h3>
                                 <div id="attributes-container" class="space-y-1"></div>
                             </div>
-                            <div class="bg-gray-900 p-3 rounded-lg border border-purple-500/30">
-                                <h3 class="font-bold text-purple-300 border-b border-purple-500/50 pb-1 mb-2">DISCIPLINES</h3>
+                            <div class="bg-gray-900 p-3 rounded-xl border border-purple-500/30">
+                                <h3 class="text-xs font-bold text-purple-300 border-b border-purple-500/50 pb-1 mb-2">DISCIPLINES</h3>
                                 <div id="disciplines-container" class="space-y-1"></div>
                             </div>
                         </div>
+
+                        <!-- Focuses & Values -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-gray-900 p-3 rounded-xl border border-sky-500/30">
+                                <div class="flex justify-between items-center mb-2 border-b border-sky-500/50 pb-1">
+                                    <h3 class="text-xs font-bold text-sky-400">SPECIALIZED FOCUSES</h3>
+                                    <button onclick="addNewFocus()" class="text-[10px] bg-sky-400 text-black px-2 py-0.5 rounded font-bold">+ ADD</button>
+                                </div>
+                                <div id="focuses-list" class="flex flex-wrap gap-1"></div>
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-xl border border-amber-500/30">
+                                <h3 class="text-xs font-bold text-amber-400 border-b border-amber-500/50 pb-1 mb-2">CHARACTER VALUES</h3>
+                                <ul id="values-list" class="space-y-1 text-[10px] text-gray-200"></ul>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- INVENTORY TAB -->
+                    <!-- TAB 2: INVENTORY MANAGEMENT -->
                     <div id="view-inventory" class="tab-view hidden space-y-3">
-                        <div class="flex justify-between items-center bg-gray-900 p-2 rounded border border-gray-800">
-                            <h2 class="text-base font-bold text-amber-400">EQUIPMENT & INVENTORY</h2>
-                            <button onclick="openAddItemModal()" class="lcars-btn bg-amber-400 text-black px-3 py-1 font-bold rounded text-xs">+ ADD ITEM</button>
+                        <div class="flex justify-between items-center bg-gray-900 p-3 border-l-4 border-amber-500 rounded-r-lg">
+                            <div>
+                                <h2 class="text-lg font-bold text-amber-400">EQUIPMENT & INVENTORY LOG</h2>
+                                <p class="text-[10px] text-gray-400">TACTICAL GEAR MANIFEST</p>
+                            </div>
+                            <button onclick="openAddItemModal()" class="lcars-btn bg-amber-400 text-black px-3 py-1 font-bold rounded text-xs">+ ADD NEW ITEM</button>
                         </div>
+
+                        <div class="flex justify-between items-center bg-gray-900 p-2 rounded border border-gray-800 text-xs">
+                            <div class="flex gap-1 text-[10px]">
+                                <button onclick="filterInventory('All')" class="inv-filter-btn bg-amber-500 text-black px-2 py-0.5 rounded font-bold">ALL</button>
+                                <button onclick="filterInventory('Equipment')" class="inv-filter-btn bg-gray-800 text-amber-400 px-2 py-0.5 rounded font-bold">EQUIPMENT</button>
+                                <button onclick="filterInventory('Weapons')" class="inv-filter-btn bg-gray-800 text-amber-400 px-2 py-0.5 rounded font-bold">WEAPONS</button>
+                                <button onclick="filterInventory('Tech')" class="inv-filter-btn bg-gray-800 text-amber-400 px-2 py-0.5 rounded font-bold">TECH</button>
+                            </div>
+                            <input type="text" id="inventory-search" oninput="renderInventory()" placeholder="SEARCH..." class="bg-black border border-amber-500 px-2 py-0.5 text-[10px] text-amber-300 rounded focus:outline-none uppercase w-36">
+                        </div>
+
                         <div id="inventory-grid" class="grid grid-cols-2 gap-3 text-xs"></div>
                     </div>
 
-                    <!-- ROLLER TAB -->
-                    <div id="view-roller" class="tab-view hidden space-y-3">
-                        <div class="bg-gray-900 p-3 rounded-lg border border-sky-500/30 space-y-3 text-xs">
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="text-sky-300 block mb-1">ATTRIBUTE</label>
-                                    <select id="roll-attr-select" class="w-full bg-black border border-sky-400 text-amber-400 p-1 rounded uppercase"></select>
+                    <!-- TAB 3: TACTICAL STA DICE ROLLER -->
+                    <div id="view-roller" class="tab-view hidden space-y-4">
+                        <div class="bg-gray-900 p-3 border-l-4 border-sky-400 rounded-r-lg">
+                            <h2 class="text-lg font-bold text-sky-400">TACTICAL TASK EVALUATOR</h2>
+                            <p class="text-[10px] text-gray-400">STAR TREK ADVENTURES SYSTEM ROLLER</p>
+                        </div>
+
+                        <div class="grid grid-cols-12 gap-3">
+                            <div class="col-span-7 bg-gray-900 p-3 rounded-xl border border-sky-500/30 space-y-3 text-xs">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-sky-300 block mb-1 text-[10px]">ATTRIBUTE</label>
+                                        <select id="roll-attr-select" class="w-full bg-black border border-sky-400 text-amber-400 p-1 text-xs rounded uppercase"></select>
+                                    </div>
+                                    <div>
+                                        <label class="text-purple-300 block mb-1 text-[10px]">DISCIPLINE</label>
+                                        <select id="roll-disc-select" class="w-full bg-black border border-purple-400 text-amber-400 p-1 text-xs rounded uppercase"></select>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="text-purple-300 block mb-1">DISCIPLINE</label>
-                                    <select id="roll-disc-select" class="w-full bg-black border border-purple-400 text-amber-400 p-1 rounded uppercase"></select>
+
+                                <div class="bg-black p-2 rounded border border-gray-800 flex justify-between items-center">
+                                    <span class="text-xs text-gray-400">TARGET NUMBER (TN):</span>
+                                    <span id="calculated-tn" class="text-xl font-bold text-amber-400">14</span>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-gray-300 block mb-1 text-[10px]">D20 POOL SIZE</label>
+                                        <select id="roll-pool-size" class="w-full bg-black border border-amber-500 text-amber-400 p-1 text-xs rounded uppercase">
+                                            <option value="1">1D20</option>
+                                            <option value="2" selected>2D20 (STANDARD)</option>
+                                            <option value="3">3D20</option>
+                                            <option value="4">4D20</option>
+                                            <option value="5">5D20</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-300 block mb-1 text-[10px]">CHALLENGE D6</label>
+                                        <input type="number" id="roll-d6-count" value="0" min="0" max="10" class="w-full bg-black border border-amber-500 text-amber-400 p-1 text-xs rounded">
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <button onclick="executeTaskRoll()" class="flex-1 lcars-btn bg-amber-500 text-black py-2 font-bold text-xs"><i class="fas fa-dice-d20 mr-1"></i> ROLL D20</button>
+                                    <button onclick="executeD6Roll()" class="flex-1 lcars-btn bg-purple-400 text-black py-2 font-bold text-xs"><i class="fas fa-cubes mr-1"></i> ROLL D6</button>
                                 </div>
                             </div>
-                            <button onclick="executeTaskRoll()" class="w-full lcars-btn bg-amber-500 text-black py-2 font-bold rounded">EXECUTE TASK CHECK</button>
+
+                            <div class="col-span-5 bg-gray-900 p-3 rounded-xl border border-amber-500/30 flex flex-col justify-between">
+                                <h3 class="text-xs font-bold text-purple-300 border-b border-gray-800 pb-1 mb-2">TACTICAL OUTPUT</h3>
+                                <div id="roll-result-container" class="bg-black p-3 rounded-xl border border-gray-800 flex-grow flex flex-col justify-center items-center text-center text-xs">
+                                    <i class="fas fa-terminal text-3xl text-gray-700 mb-1"></i>
+                                    <p class="text-[10px] text-gray-500">AWAITING TASK CHECK...</p>
+                                </div>
+                            </div>
                         </div>
-                        <div id="roll-result-container" class="bg-black p-3 rounded border border-gray-800 text-center text-xs"></div>
                     </div>
 
-                    <!-- LOGS TAB -->
+                    <!-- TAB 4: CAPTAIN'S LOG & AUDIT STREAM -->
                     <div id="view-logs" class="tab-view hidden space-y-3">
+                        <div class="flex justify-between items-center bg-gray-900 p-3 border-l-4 border-purple-400 rounded-r-lg">
+                            <div>
+                                <h2 class="text-lg font-bold text-purple-300">CAPTAIN'S LOG & AUDIT LOG</h2>
+                                <p class="text-[10px] text-gray-400">CHRONOLOGICAL LOG STREAM</p>
+                            </div>
+                            <button onclick="clearLogStream()" class="lcars-btn bg-red-600 text-white px-3 py-1 text-xs font-bold">PURGE</button>
+                        </div>
+
                         <div class="flex gap-2 bg-gray-900 p-2 rounded border border-gray-800">
-                            <input type="text" id="manual-log-input" placeholder="ENTER CAPTAIN'S LOG..." class="flex-grow bg-black border border-purple-500/50 px-2 py-1 text-xs text-amber-300 rounded uppercase">
+                            <input type="text" id="manual-log-input" placeholder="ENTER LOG ENTRY..." class="flex-grow bg-black border border-purple-500/50 px-2 py-1 text-xs text-amber-300 rounded uppercase">
                             <button onclick="addManualLogEntry()" class="lcars-btn bg-purple-400 text-black px-3 py-1 font-bold text-xs rounded">RECORD</button>
                         </div>
+
                         <div id="log-stream-container" class="bg-black p-3 rounded border border-gray-800 font-mono text-[11px] space-y-1 max-h-64 overflow-y-auto"></div>
                     </div>
 
@@ -539,67 +690,123 @@
 
     </div>
 
-    <!-- MODALS SECTION -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <!-- TORPEDO MODAL -->
-        <div id="torpedoModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-red)] rounded-xl p-4">
-            <div class="flex justify-between items-center border-b border-[var(--lcars-red)] pb-2 mb-2">
-                <span class="text-lg font-bold text-[var(--lcars-red)]">TORPEDO LAUNCH & FABRICATION</span>
-                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+    <!-- MODAL ADD INVENTORY ITEM -->
+    <div id="add-item-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-gray-900 border-2 border-amber-500 rounded-2xl max-w-md w-full p-5 space-y-3">
+            <div class="flex justify-between items-center border-b border-amber-500 pb-2">
+                <h3 class="text-base font-bold text-amber-400">ADD MANIFEST ITEM</h3>
+                <button onclick="closeAddItemModal()" class="text-amber-500 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
-            <div class="space-y-3 text-xs">
-                <div class="flex justify-between bg-neutral-900 p-2 rounded">
-                    <span>PHOTONS: <span id="modal-photons" class="font-bold text-amber-400">100</span></span>
-                    <span>QUANTUMS: <span id="modal-quantums" class="font-bold text-cyan-400">88</span></span>
-                    <span>R-MATS: <span id="modal-rmats" class="font-bold text-purple-300">500</span></span>
+            <div class="space-y-2 text-xs">
+                <div>
+                    <label class="block text-gray-400 mb-1">ITEM NAME</label>
+                    <input type="text" id="new-item-name" class="w-full bg-black border border-amber-500/60 p-1.5 text-amber-300 rounded focus:outline-none uppercase">
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="fireTorpedo('photon')" class="flex-1 lcars-btn bg-lcars-red text-white py-2 font-bold">FIRE PHOTON (-1)</button>
-                    <button onclick="fabricateTorpedoes(5)" class="flex-1 lcars-btn bg-lcars-gold text-black py-2 font-bold">FABRICATE +5 (-50 R-MAT)</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-gray-400 mb-1">CATEGORY</label>
+                        <select id="new-item-category" class="w-full bg-black border border-amber-500/60 p-1.5 text-amber-300 rounded focus:outline-none">
+                            <option value="Equipment">EQUIPMENT</option>
+                            <option value="Weapons">WEAPONS</option>
+                            <option value="Tech">TECH</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1">QTY</label>
+                        <input type="number" id="new-item-qty" value="1" min="1" class="w-full bg-black border border-amber-500/60 p-1.5 text-amber-300 rounded focus:outline-none">
+                    </div>
                 </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">DESCRIPTION</label>
+                    <textarea id="new-item-desc" rows="2" class="w-full bg-black border border-amber-500/60 p-1.5 text-amber-300 rounded focus:outline-none uppercase"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="saveNewInventoryItem()" class="flex-1 lcars-btn bg-amber-500 text-black py-1.5 font-bold rounded text-xs">ADD ITEM</button>
+                <button onclick="closeAddItemModal()" class="flex-1 lcars-btn bg-gray-800 text-gray-300 py-1.5 font-bold rounded text-xs">CANCEL</button>
             </div>
         </div>
+    </div>
 
+    <!-- MODALS OVERLAY FOR DECK MODULES -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        
         <!-- BRIDGE MODAL -->
-        <div id="bridgeModal" class="modal-content hidden w-full max-w-3xl bg-black border-2 border-[var(--lcars-blue)] rounded-xl p-4">
-            <div class="flex justify-between items-center border-b border-[var(--lcars-blue)] pb-2 mb-2">
-                <span class="text-lg font-bold text-[var(--lcars-blue)]">COMMAND BRIDGE</span>
-                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+        <div id="bridgeModal" class="modal-content hidden w-full max-w-4xl bg-black border-2 border-[var(--lcars-blue)] rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-blue)] pb-2">
+                <span class="text-xl font-bold text-[var(--lcars-blue)]">COMMAND BRIDGE • MAIN VIEWSCREEN</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-1 px-4 text-xs font-bold">X CLOSE</button>
             </div>
-            <div class="relative h-64 bg-slate-950 rounded border border-slate-800 flex items-center justify-center text-xs text-sky-400 font-mono">
-                [MAIN VIEWSCREEN ONLINE]
+            <div class="relative h-[320px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 flex flex-col justify-between p-2">
+                <canvas id="bridgeViewscreenCanvas" class="w-full h-full"></canvas>
             </div>
         </div>
 
         <!-- SCIENCE MODAL -->
-        <div id="scienceModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-gold)] rounded-xl p-4">
-            <div class="flex justify-between items-center border-b border-[var(--lcars-gold)] pb-2 mb-2">
-                <span class="text-lg font-bold text-[var(--lcars-gold)]">SCIENCE LABS</span>
-                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+        <div id="scienceModal" class="modal-content hidden w-full max-w-3xl bg-black border-2 border-[var(--lcars-gold)] rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-gold)] pb-2">
+                <span class="text-xl font-bold text-[var(--lcars-gold)]">SCIENCE LABS MATRIX</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-1 px-4 text-xs font-bold">X CLOSE</button>
             </div>
-            <div class="text-xs text-slate-300 font-mono">SCIENCE LAB MATRIX ACTIVE. NO UNRESOLVED SENSOR ANOMALIES.</div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-950 p-3 border border-[var(--lcars-gold)] rounded-lg space-y-2">
+                    <input type="text" id="scienceTaskInput" placeholder="Task description..." class="w-full bg-black border border-[var(--lcars-gold)] p-1.5 rounded text-white text-xs">
+                    <button onclick="startScienceResearch()" class="w-full lcars-btn bg-lcars-gold text-black py-1 text-xs font-bold">INITIATE ANALYSIS</button>
+                </div>
+                <div id="scienceTasksList" class="bg-slate-950 p-3 border border-[var(--lcars-gold)] rounded-lg text-xs space-y-1"></div>
+            </div>
         </div>
 
         <!-- ENGINEERING MODAL -->
-        <div id="engineeringModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-peach)] rounded-xl p-4">
-            <div class="flex justify-between items-center border-b border-[var(--lcars-peach)] pb-2 mb-2">
-                <span class="text-lg font-bold text-[var(--lcars-peach)]">MAIN ENGINEERING</span>
-                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+        <div id="engineeringModal" class="modal-content hidden w-full max-w-4xl bg-black border-2 border-[var(--lcars-peach)] rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-peach)] pb-2">
+                <span class="text-xl font-bold text-[var(--lcars-peach)]">MAIN ENGINEERING REPAIR TEAMS</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-1 px-4 text-xs font-bold">X CLOSE</button>
             </div>
-            <div class="text-xs text-slate-300 font-mono">WARP CORE PHASE MATRIX: 100% NOMINAL.</div>
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-slate-950 p-3 border border-[var(--lcars-peach)] rounded-lg space-y-2 text-xs">
+                    <select id="engTaskType" class="w-full bg-black border border-[var(--lcars-peach)] p-1 text-white">
+                        <option value="Repair Room">Repair Room</option>
+                        <option value="Repair Hull">Repair Hull (+15%)</option>
+                    </select>
+                    <select id="engRoomSelect" class="w-full bg-black border border-[var(--lcars-peach)] p-1 text-white"></select>
+                    <button onclick="dispatchEngTeam()" class="w-full lcars-btn bg-lcars-peach text-black py-1.5 font-bold">DISPATCH TEAM</button>
+                </div>
+                <div id="engTasksList" class="col-span-2 bg-slate-950 p-3 border border-[var(--lcars-peach)] rounded-lg text-xs"></div>
+            </div>
+        </div>
+
+        <!-- TORPEDO MODAL -->
+        <div id="torpedoModal" class="modal-content hidden w-full max-w-3xl bg-black border-2 border-[var(--lcars-red)] rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-red)] pb-2">
+                <span class="text-xl font-bold text-[var(--lcars-red)]">TACTICAL TORPEDO POD LAUNCHERS</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-1 px-4 text-xs font-bold">X CLOSE</button>
+            </div>
+            <div class="flex justify-between bg-neutral-900 p-2 rounded text-xs">
+                <span>PHOTONS: <b id="modal-photons" class="text-amber-400">100</b></span>
+                <span>QUANTUMS: <b id="modal-quantums" class="text-cyan-400">88</b></span>
+                <span>R-MATS: <b id="modal-rmats" class="text-purple-300">500</b></span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="fireTorpedo('photon')" class="flex-1 lcars-btn bg-lcars-red text-white py-2 text-xs font-bold">FIRE PHOTON (-1)</button>
+                <button onclick="fabricateTorpedoes(5)" class="flex-1 lcars-btn bg-lcars-gold text-black py-2 text-xs font-bold">FABRICATE +5 (-50 R-MAT)</button>
+            </div>
         </div>
 
         <!-- SHUTTLEBAY MODAL -->
-        <div id="shuttleModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-lavender)] rounded-xl p-4">
-            <div class="flex justify-between items-center border-b border-[var(--lcars-lavender)] pb-2 mb-2">
-                <span class="text-lg font-bold text-[var(--lcars-lavender)]">PRIMARY SHUTTLEBAY</span>
-                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+        <div id="shuttleModal" class="modal-content hidden w-full max-w-3xl bg-black border-2 border-[var(--lcars-lavender)] rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-lavender)] pb-2">
+                <span class="text-xl font-bold text-[var(--lcars-lavender)]">SHUTTLEBAY INVENTORY & LAUNCH</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-1 px-4 text-xs font-bold">X CLOSE</button>
             </div>
-            <div class="text-xs text-slate-300 font-mono">3 TYPE-9 SHUTTLES PREPARED FOR DEPLOYMENT.</div>
+            <div class="flex justify-between items-center bg-slate-950 p-3 border border-[var(--lcars-lavender)] rounded-lg">
+                <span class="text-xs">TYPE-9 SHUTTLES: <span id="shuttle-count-display">3</span></span>
+                <button onclick="launchCraft('Type-9 Shuttle')" class="lcars-btn bg-lcars-lavender text-black px-4 py-1 text-xs font-bold">LAUNCH SHUTTLE</button>
+            </div>
         </div>
     </div>
 
-    <!-- UNIFIED JAVASCRIPT APPLICATION ENGINE -->
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
     <script>
         function autoScaleLCARS() {
             const wrapper = document.getElementById('viewport-wrapper');
@@ -609,15 +816,15 @@
         window.addEventListener('resize', autoScaleLCARS);
         window.addEventListener('load', autoScaleLCARS);
 
-        /* SINGLE UNIFIED MASTER SHIP & PADD STATE */
+        /* MASTER SHIP UNIFIED STATE */
         const shipState = {
             cycle: 1,
             hullIntegrity: 84,
-            resources: {
-                rmats: 500,
-                photons: 100,
-                quantums: 88
-            },
+            shuttles: 3,
+            fighters: 6,
+            resources: { rmats: 500, photons: 100, quantums: 88 },
+            scienceTasks: [],
+            engTasks: [],
             rooms: [
                 { id: 'room-bridge', name: 'Main Bridge', deck: 1, x: 500, y: 75, w: 90, h: 25, status: 'Normal', special: 'bridge' },
                 { id: 'room-sci-lab', name: 'Main Science Lab', deck: 4, x: 430, y: 130, w: 80, h: 25, status: 'Normal', special: 'science' },
@@ -627,18 +834,30 @@
             ]
         };
 
+        /* MASTER CAPTAIN'S PADD STATE */
+        const STARFLEET_RANKS = [
+            "CADET", "ENSIGN", "LIEUTENANT (J.G.)", "LIEUTENANT", "LIEUTENANT COMMANDER",
+            "COMMANDER", "CAPTAIN", "REAR ADMIRAL", "VICE ADMIRAL", "ADMIRAL", "FLEET ADMIRAL"
+        ];
+
         const DEFAULT_CHARACTER = {
-            name: "ADAM WINFIELD", rank: "COMMANDER", species: "HUMAN", assignment: "COMMANDING OFFICER",
+            name: "ADAM WINFIELD", pronouns: "HE/HIM", species: "HUMAN", rank: "COMMANDER", assignment: "COMMANDING OFFICER",
+            environment: "HOMEWORLD", earlyOutlook: "MILITARY OR EXPLORATION", education: "CIVILIAN EXPERT", careerLength: "EXPERIENCED",
             vitals: { maxHp: 12, currentHp: 12, momentum: 6, determination: 3 },
             attributes: { Control: 11, Daring: 8, Fitness: 8, Insight: 10, Presence: 8, Reason: 11 },
             disciplines: { Command: 3, Conn: 3, Security: 1, Engineering: 4, Science: 4, Medicine: 1 },
+            focuses: ["RESEARCH", "UNORTHODOX MATHEMATICS", "PHYSICS", "COMPUTER SCIENCE", "STARSHIP RECOGNITION", "ARTIFICIAL INTELLIGENCE SYSTEMS"],
+            values: ["INFORMATION IS POWER", "A GOOD MYSTERY IS IRRESISTIBLE", "ACT WITH CONFIDENCE, EVEN IF YOU DON'T FEEL CONFIDENT", "NEVER LEAVE A STONE UNTURNED"],
             inventory: [
-                { id: "1", name: "STARFLEET COMBADGE", category: "Tech", qty: 1, desc: "Communicator and transponder.", equipped: true },
-                { id: "2", name: "PHASER TYPE II", category: "Weapons", qty: 1, desc: "Standard sidearm.", equipped: true }
+                { id: "1", name: "STARFLEET COMBADGE", category: "Tech", qty: 1, desc: "Standard issue communicator and locational transponder.", equipped: true },
+                { id: "2", name: "PHASER TYPE II", category: "Weapons", qty: 1, desc: "Standard sidearm with stun and vaporize settings.", equipped: true },
+                { id: "3", name: "TRICORDER MK-VII", category: "Tech", qty: 1, desc: "High-resolution sensor suite for field analysis.", equipped: true }
             ],
-            logs: ["[LOG] LCARS PADD Initialized."]
+            logs: []
         };
         let character = JSON.parse(JSON.stringify(DEFAULT_CHARACTER));
+        let redAlertActive = false;
+        let currentActiveFilter = "All";
 
         /* AUDIO ENGINE */
         class LcarsAudioEngine {
@@ -663,70 +882,90 @@
 
         function toggleAudioMute() {
             soundEngine.muted = !soundEngine.muted;
-            const btn = document.getElementById('btn-audio-mute');
-            if (btn) btn.innerText = soundEngine.muted ? "🔇 AUDIO: OFF" : "🔊 AUDIO: ON";
+            const b1 = document.getElementById('btn-audio-mute');
+            const b2 = document.getElementById('audio-toggle-btn-padd');
+            if (b1) b1.innerText = soundEngine.muted ? "🔇 AUDIO: OFF" : "🔊 AUDIO: ON";
+            if (b2) b2.innerHTML = soundEngine.muted ? `<i class="fas fa-volume-mute"></i> AUDIO: OFF` : `<i class="fas fa-volume-up"></i> AUDIO: ON`;
         }
 
-        /* REFRESH UI CROSS-PAGE DATA SYNC */
+        /* REFRESH UI & CROSS-SYNC ENGINE */
         function updateAllUI() {
-            // Update Cycle Counters across all screens
+            // Cycle Updates
             document.getElementById('main-menu-cycle').innerText = shipState.cycle;
             document.getElementById('overview-cycle-display').innerText = shipState.cycle;
             document.getElementById('ops-cycle-header').innerText = shipState.cycle;
 
-            // Update Resource Monitors across all screens
+            // Overview Readouts
+            document.getElementById('overview-hull').innerText = `${shipState.hullIntegrity}%`;
             document.getElementById('overview-rmats').innerText = shipState.resources.rmats;
             document.getElementById('overview-torps').innerText = shipState.resources.photons + shipState.resources.quantums;
-            document.getElementById('overview-hull').innerText = `${shipState.hullIntegrity}%`;
+            document.getElementById('overview-teams').innerText = shipState.engTasks.length;
 
+            // Operations Readouts
+            document.getElementById('ops-hull-val').innerText = `${shipState.hullIntegrity}%`;
+            document.getElementById('ops-hull-bar').style.width = `${shipState.hullIntegrity}%`;
             document.getElementById('ops-rmats-val').innerText = shipState.resources.rmats;
             document.getElementById('ops-photons-val').innerText = shipState.resources.photons;
             document.getElementById('ops-quantums-val').innerText = shipState.resources.quantums;
-            document.getElementById('ops-hull-val').innerText = `${shipState.hullIntegrity}%`;
-            document.getElementById('ops-hull-bar').style.width = `${shipState.hullIntegrity}%`;
+            document.getElementById('ops-shuttles-val').innerText = shipState.shuttles;
+            document.getElementById('ops-fighters-val').innerText = shipState.fighters;
 
             // Modal sync
-            const mP = document.getElementById('modal-photons');
-            if (mP) mP.innerText = shipState.resources.photons;
-            const mQ = document.getElementById('modal-quantums');
-            if (mQ) mQ.innerText = shipState.resources.quantums;
-            const mR = document.getElementById('modal-rmats');
-            if (mR) mR.innerText = shipState.resources.rmats;
+            const mP = document.getElementById('modal-photons'); if (mP) mP.innerText = shipState.resources.photons;
+            const mQ = document.getElementById('modal-quantums'); if (mQ) mQ.innerText = shipState.resources.quantums;
+            const mR = document.getElementById('modal-rmats'); if (mR) mR.innerText = shipState.resources.rmats;
+            const mS = document.getElementById('shuttle-count-display'); if (mS) mS.innerText = shipState.shuttles;
+
+            renderEngTasks();
+            renderScienceTasks();
+            renderSchematics();
         }
 
-        /* ACTIONS & FABRICATION */
+        /* PHASE CYCLES */
         function executePhaseCycles(count) {
             const num = count || parseInt(document.getElementById('phaseCycleInput').value) || 1;
             shipState.cycle += num;
+            
+            // Advance Science & Engineering Task progress
+            shipState.engTasks.forEach(task => { task.progress += num * 25; if (task.progress >= 100) task.progress = 100; });
+            shipState.scienceTasks.forEach(task => { task.progress += num * 20; if (task.progress >= 100) task.progress = 100; });
+
             soundEngine.playBeep(880);
             updateAllUI();
         }
 
-        function quickSetCycles(val) {
-            document.getElementById('phaseCycleInput').value = val;
-        }
+        function quickSetCycles(val) { document.getElementById('phaseCycleInput').value = val; }
 
         function fabricateTorpedoes(qty) {
-            const costPerUnit = 10;
-            const totalCost = qty * costPerUnit;
+            const totalCost = qty * 10;
             if (shipState.resources.rmats >= totalCost) {
                 shipState.resources.rmats -= totalCost;
                 shipState.resources.photons += qty;
                 soundEngine.playBeep(900);
+                addLogEntry(`Torpedo Fabrication Complete: +${qty} Photons added.`);
                 updateAllUI();
-            } else {
-                alert("INSUFFICIENT R-MATS FOR TORPEDO FABRICATION!");
-            }
+            } else { alert("INSUFFICIENT R-MATS!"); }
         }
 
         function fireTorpedo(type) {
             if (type === 'photon' && shipState.resources.photons > 0) {
                 shipState.resources.photons--;
                 soundEngine.playBeep(300, 'sawtooth', 0.2);
+                addLogEntry("Tactical Update: Photon Torpedo Discharged.");
                 updateAllUI();
             }
         }
 
+        function launchCraft(type) {
+            if (shipState.shuttles > 0) {
+                shipState.shuttles--;
+                soundEngine.playBeep(600);
+                addLogEntry(`Flight Operations: Launched ${type}.`);
+                updateAllUI();
+            }
+        }
+
+        /* SCHEMATICS SVG */
         function renderSchematics() {
             const group = document.getElementById('rooms-group');
             if (!group) return;
@@ -737,6 +976,7 @@
                 rect.setAttribute('width', room.w); rect.setAttribute('height', room.h);
                 rect.setAttribute('rx', 4);
                 rect.setAttribute('class', `status-${room.status.toLowerCase()} cursor-pointer`);
+                rect.addEventListener('mouseenter', () => { document.getElementById('selected-room-name').innerText = `${room.name} (DECK ${room.deck})`; });
                 rect.addEventListener('click', () => {
                     soundEngine.playBeep(850);
                     if (room.special === 'bridge') openModal('bridgeModal');
@@ -749,7 +989,71 @@
             });
         }
 
-        /* VIEW NAVIGATION */
+        function resetShipStatus() {
+            shipState.rooms.forEach(r => { if (Math.random() > 0.5) r.status = 'Damaged'; });
+            shipState.hullIntegrity = Math.floor(60 + Math.random() * 30);
+            updateAllUI();
+        }
+
+        function repairAllRooms() {
+            shipState.rooms.forEach(r => r.status = 'Normal');
+            shipState.hullIntegrity = 100;
+            updateAllUI();
+        }
+
+        /* ENGINEERING & SCIENCE DISPATCHERS */
+        function populateEngRoomDropdown() {
+            const select = document.getElementById('engRoomSelect');
+            if (!select) return;
+            select.innerHTML = '';
+            shipState.rooms.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id; opt.innerText = r.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function dispatchEngTeam() {
+            const type = document.getElementById('engTaskType').value;
+            const roomId = document.getElementById('engRoomSelect').value;
+            const room = shipState.rooms.find(r => r.id === roomId);
+            shipState.engTasks.push({ id: Date.now(), type, roomName: room ? room.name : 'Hull', progress: 0 });
+            soundEngine.playBeep(700);
+            updateAllUI();
+        }
+
+        function renderEngTasks() {
+            const list = document.getElementById('engTasksList');
+            if (!list) return;
+            list.innerHTML = shipState.engTasks.map(t => `
+                <div class="border border-slate-700 p-2 rounded mb-1 bg-black">
+                    <div class="flex justify-between font-bold"><span>${t.type} - ${t.roomName}</span><span>${t.progress}%</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded overflow-hidden mt-1"><div class="bg-amber-400 h-full" style="width:${t.progress}%"></div></div>
+                </div>
+            `).join('');
+        }
+
+        function startScienceResearch() {
+            const text = document.getElementById('scienceTaskInput').value;
+            if (!text) return;
+            shipState.scienceTasks.push({ id: Date.now(), desc: text, progress: 0 });
+            document.getElementById('scienceTaskInput').value = '';
+            soundEngine.playBeep(750);
+            updateAllUI();
+        }
+
+        function renderScienceTasks() {
+            const list = document.getElementById('scienceTasksList');
+            if (!list) return;
+            list.innerHTML = shipState.scienceTasks.map(t => `
+                <div class="border border-amber-500/40 p-2 rounded mb-1 bg-black">
+                    <div class="flex justify-between font-bold"><span>${t.desc}</span><span>${t.progress}%</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded overflow-hidden mt-1"><div class="bg-sky-400 h-full" style="width:${t.progress}%"></div></div>
+                </div>
+            `).join('');
+        }
+
+        /* VIEW SWITCHER */
         function switchView(viewName) {
             soundEngine.playBeep(800);
             document.getElementById('view-main-menu').classList.add('hidden');
@@ -762,121 +1066,371 @@
             else if (viewName === 'padd') {
                 document.getElementById('view-padd').classList.remove('hidden');
                 document.getElementById('view-padd').classList.add('flex');
-                renderPadd();
+                renderAllPadd();
             }
             else document.getElementById('view-main-menu').classList.remove('hidden');
 
             updateAllUI();
         }
 
-        /* CAPTAIN'S PADD LOGIC */
+        /* MODALS CONTROLLER */
+        function openModal(id) {
+            soundEngine.playBeep(700);
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.querySelectorAll('.modal-content').forEach(e => e.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'engineeringModal') populateEngRoomDropdown();
+            updateAllUI();
+        }
+        function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+
+        /* CAPTAIN'S PADD FULL LOGIC */
         function switchPaddTab(tabId) {
             soundEngine.playBeep();
             document.querySelectorAll('#view-padd .tab-view').forEach(view => view.classList.add('hidden'));
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
         }
 
-        function renderPadd() {
+        function renderAllPadd() {
+            document.getElementById('char-name').innerText = character.name;
+            document.getElementById('char-rank').innerText = character.rank;
+            document.getElementById('char-assignment').innerText = character.assignment;
+            document.getElementById('char-species').innerText = character.species;
+            document.getElementById('char-environment').innerText = character.environment;
+            document.getElementById('char-career').innerText = character.careerLength;
+
             document.getElementById('quick-name').innerText = character.name;
             document.getElementById('quick-rank').innerText = character.rank;
             document.getElementById('quick-hp').innerText = `${character.vitals.currentHp}/${character.vitals.maxHp}`;
-            renderAttributesPadd();
-            renderDisciplinesPadd();
-            renderInventoryPadd();
+            document.getElementById('quick-momentum').innerText = character.vitals.momentum;
+
+            document.getElementById('header-rank-badge').innerText = `RANK: ${character.rank}`;
+            document.getElementById('current-rank-display').innerText = character.rank;
+
+            renderRankControls();
+            renderVitals();
+            renderAttributes();
+            renderDisciplines();
+            renderFocusesAndValues();
+            renderInventory();
             populateRollSelects();
-            renderLogsPadd();
+            renderLogs();
         }
 
-        function renderAttributesPadd() {
+        function renderRankControls() {
+            const select = document.getElementById('rank-select-dropdown');
+            if (!select) return;
+            select.innerHTML = '';
+            STARFLEET_RANKS.forEach(r => {
+                const opt = document.createElement('option'); opt.value = r; opt.innerText = r;
+                if (r === character.rank) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function setRankFromSelect(newRank) {
+            if (newRank && newRank !== character.rank) {
+                character.rank = newRank;
+                addLogEntry(`[RANK UPDATE] Starfleet commission adjusted to ${newRank}.`);
+                renderAllPadd();
+            }
+        }
+
+        function promoteDemoteRank(delta) {
+            let currIdx = STARFLEET_RANKS.indexOf(character.rank);
+            if (currIdx === -1) currIdx = 5;
+            const newIdx = currIdx + delta;
+            if (newIdx >= 0 && newIdx < STARFLEET_RANKS.length) {
+                character.rank = STARFLEET_RANKS[newIdx];
+                addLogEntry(`Rank adjusted to: ${character.rank}.`);
+                renderAllPadd();
+            }
+        }
+
+        function renderVitals() {
+            const current = character.vitals.currentHp;
+            const max = character.vitals.maxHp;
+            const percent = Math.max(0, Math.min(100, (current / max) * 100));
+
+            document.getElementById('hp-text-display').innerText = `${current} / ${max} HP`;
+            document.getElementById('hp-bar-fill').style.width = `${percent}%`;
+
+            document.getElementById('momentum-val').innerText = character.vitals.momentum;
+            document.getElementById('determination-val').innerText = character.vitals.determination;
+        }
+
+        function adjustHP(delta) {
+            character.vitals.currentHp = Math.max(0, Math.min(character.vitals.maxHp, character.vitals.currentHp + delta));
+            addLogEntry(`Stress level updated: ${character.vitals.currentHp}/${character.vitals.maxHp} HP.`);
+            renderVitals();
+        }
+
+        function fullRestHP() {
+            character.vitals.currentHp = character.vitals.maxHp;
+            addLogEntry("Medical Rest Initiated: Health restored.");
+            renderVitals();
+        }
+
+        function adjustCounter(type, delta) {
+            character.vitals[type] = Math.max(0, character.vitals[type] + delta);
+            addLogEntry(`Resource updated: ${type.toUpperCase()} set to ${character.vitals[type]}.`);
+            renderVitals();
+        }
+
+        function renderAttributes() {
             const container = document.getElementById('attributes-container');
-            if (!container) return;
             container.innerHTML = '';
             for (const [key, value] of Object.entries(character.attributes)) {
-                container.innerHTML += `<div class="flex justify-between border-b border-gray-800 pb-0.5"><span class="text-amber-400 font-bold">${key}:</span><span class="text-white font-bold">${value}</span></div>`;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-950 p-1 rounded border border-gray-800 text-xs">
+                        <span class="font-bold text-amber-400">${key}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white">${value}</span>
+                            <button onclick="adjustStat('attributes', '${key}', -1)" class="px-1.5 bg-gray-800 text-amber-400 font-bold rounded">-</button>
+                            <button onclick="adjustStat('attributes', '${key}', 1)" class="px-1.5 bg-gray-800 text-amber-400 font-bold rounded">+</button>
+                        </div>
+                    </div>
+                `;
             }
         }
 
-        function renderDisciplinesPadd() {
+        function renderDisciplines() {
             const container = document.getElementById('disciplines-container');
-            if (!container) return;
             container.innerHTML = '';
             for (const [key, value] of Object.entries(character.disciplines)) {
-                container.innerHTML += `<div class="flex justify-between border-b border-gray-800 pb-0.5"><span class="text-purple-300 font-bold">${key}:</span><span class="text-white font-bold">${value}</span></div>`;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-950 p-1 rounded border border-gray-800 text-xs">
+                        <span class="font-bold text-purple-300">${key}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white">${value}</span>
+                            <button onclick="adjustStat('disciplines', '${key}', -1)" class="px-1.5 bg-gray-800 text-purple-300 font-bold rounded">-</button>
+                            <button onclick="adjustStat('disciplines', '${key}', 1)" class="px-1.5 bg-gray-800 text-purple-300 font-bold rounded">+</button>
+                        </div>
+                    </div>
+                `;
             }
         }
 
-        function renderInventoryPadd() {
-            const grid = document.getElementById('inventory-grid');
-            if (!grid) return;
-            grid.innerHTML = character.inventory.map(item => `
-                <div class="bg-gray-900 border border-gray-800 p-2 rounded">
-                    <div class="font-bold text-amber-400">${item.name}</div>
-                    <div class="text-[10px] text-gray-400">${item.desc}</div>
-                </div>
-            `).join('');
+        function adjustStat(cat, key, delta) {
+            character[cat][key] = Math.max(0, character[cat][key] + delta);
+            renderAttributes(); renderDisciplines(); populateRollSelects();
         }
 
+        function renderFocusesAndValues() {
+            const focContainer = document.getElementById('focuses-list');
+            focContainer.innerHTML = character.focuses.map((f, i) => `
+                <span class="bg-sky-950 border border-sky-400 text-sky-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                    ${f} <button onclick="removeFocus(${i})" class="hover:text-red-400 ml-1">&times;</button>
+                </span>
+            `).join('');
+
+            const valContainer = document.getElementById('values-list');
+            valContainer.innerHTML = character.values.map(v => `<li class="bg-gray-950 p-1 rounded border-l-2 border-amber-500 font-semibold">"${v}"</li>`).join('');
+        }
+
+        function addNewFocus() {
+            const n = prompt("ENTER NEW FOCUS:");
+            if (n && n.trim()) { character.focuses.push(n.trim().toUpperCase()); renderFocusesAndValues(); }
+        }
+        function removeFocus(i) { character.focuses.splice(i, 1); renderFocusesAndValues(); }
+
+        function filterInventory(cat) {
+            currentActiveFilter = cat;
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            const search = document.getElementById('inventory-search').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = character.inventory.filter(item => {
+                const matchesCat = currentActiveFilter === 'All' || item.category === currentActiveFilter;
+                const matchesSearch = item.name.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search);
+                return matchesCat && matchesSearch;
+            });
+
+            filtered.forEach(item => {
+                grid.innerHTML += `
+                    <div class="bg-gray-900 border p-2 rounded flex flex-col justify-between border-gray-800">
+                        <div>
+                            <div class="flex justify-between font-bold text-amber-400"><span>${item.name}</span><span>QTY: ${item.qty}</span></div>
+                            <div class="text-[10px] text-sky-400 font-semibold mb-1">${item.category}</div>
+                            <p class="text-[10px] text-gray-300">${item.desc}</p>
+                        </div>
+                        <div class="flex justify-end gap-1 pt-2">
+                            <button onclick="removeInventoryItem('${item.id}')" class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded font-bold">DELETE</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function removeInventoryItem(id) {
+            const idx = character.inventory.findIndex(i => i.id === id);
+            if (idx !== -1) { character.inventory.splice(idx, 1); renderInventory(); }
+        }
+
+        function openAddItemModal() { document.getElementById('add-item-modal').classList.remove('hidden'); }
+        function closeAddItemModal() { document.getElementById('add-item-modal').classList.add('hidden'); }
+
+        function saveNewInventoryItem() {
+            const name = document.getElementById('new-item-name').value.trim();
+            const category = document.getElementById('new-item-category').value;
+            const qty = parseInt(document.getElementById('new-item-qty').value) || 1;
+            const desc = document.getElementById('new-item-desc').value.trim();
+
+            if (!name) return;
+            character.inventory.push({ id: Date.now().toString(), name: name.toUpperCase(), category, qty, desc, equipped: false });
+            closeAddItemModal();
+            renderInventory();
+        }
+
+        /* STA TASK DICE ROLLER */
         function populateRollSelects() {
             const attrSelect = document.getElementById('roll-attr-select');
             const discSelect = document.getElementById('roll-disc-select');
             if (!attrSelect || !discSelect) return;
 
-            attrSelect.innerHTML = Object.keys(character.attributes).map(k => `<option value="${k}">${k} (${character.attributes[k]})</option>`).join('');
-            discSelect.innerHTML = Object.keys(character.disciplines).map(k => `<option value="${k}">${k} (${character.disciplines[k]})</option>`).join('');
+            attrSelect.innerHTML = Object.keys(character.attributes).map(k => `<option value="${k}">${k.toUpperCase()} (${character.attributes[k]})</option>`).join('');
+            discSelect.innerHTML = Object.keys(character.disciplines).map(k => `<option value="${k}">${k.toUpperCase()} (${character.disciplines[k]})</option>`).join('');
+            
+            attrSelect.onchange = updateCalculatedTN;
+            discSelect.onchange = updateCalculatedTN;
+            updateCalculatedTN();
+        }
+
+        function updateCalculatedTN() {
+            const a = document.getElementById('roll-attr-select').value;
+            const d = document.getElementById('roll-disc-select').value;
+            const tn = (character.attributes[a] || 0) + (character.disciplines[d] || 0);
+            document.getElementById('calculated-tn').innerText = tn;
         }
 
         function executeTaskRoll() {
             soundEngine.playBeep();
             const attrKey = document.getElementById('roll-attr-select').value;
             const discKey = document.getElementById('roll-disc-select').value;
-            const tn = character.attributes[attrKey] + character.disciplines[discKey];
+            const attrVal = character.attributes[attrKey] || 0;
+            const discVal = character.disciplines[discKey] || 0;
+            const tn = attrVal + discVal;
+            const numDice = parseInt(document.getElementById('roll-pool-size').value);
 
             let successes = 0;
-            let rolls = [];
-            for (let i = 0; i < 2; i++) {
+            let completions = [];
+
+            for (let i = 0; i < numDice; i++) {
                 const roll = Math.floor(Math.random() * 20) + 1;
-                const s = roll <= tn ? 1 : 0;
-                successes += s;
-                rolls.push(roll);
+                let succCount = 0;
+                if (roll <= tn) {
+                    succCount = 1;
+                    if (roll <= discVal) succCount = 2;
+                }
+                successes += succCount;
+                completions.push({ roll, succCount });
             }
 
             document.getElementById('roll-result-container').innerHTML = `
-                <div class="text-amber-400 font-bold text-base">${successes} SUCCESSES (TN: ${tn})</div>
-                <div class="text-xs text-gray-400">ROLLS: [${rolls.join(', ')}]</div>
+                <div class="space-y-2">
+                    <div class="text-[10px] text-sky-400 font-bold">TASK CHECK: ${attrKey.toUpperCase()} + ${discKey.toUpperCase()} (TN: ${tn})</div>
+                    <div class="text-3xl font-bold text-amber-400">${successes} SUCCESSES</div>
+                    <div class="flex flex-wrap gap-1 justify-center pt-1">
+                        ${completions.map(c => `
+                            <span class="px-2 py-0.5 rounded font-mono font-bold border text-xs ${c.succCount > 0 ? 'bg-green-950 border-green-500 text-green-300' : 'bg-red-950 border-red-500 text-red-300'}">
+                                [${c.roll}] (${c.succCount} S)
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
             `;
+            addLogEntry(`Task Check: ${attrKey}+${discKey} (TN:${tn}) -> ${successes} Successes.`);
+        }
+
+        function executeD6Roll() {
+            soundEngine.playBeep();
+            const count = parseInt(document.getElementById('roll-d6-count').value) || 1;
+            let totalDamage = 0; let totalEffects = 0; let rolls = [];
+
+            for (let i = 0; i < count; i++) {
+                const roll = Math.floor(Math.random() * 6) + 1;
+                let dmg = 0; let fx = 0;
+                if (roll === 1) dmg = 1; else if (roll === 2) dmg = 2;
+                else if (roll === 5 || roll === 6) { dmg = 1; fx = 1; }
+                totalDamage += dmg; totalEffects += fx; rolls.push({ roll, dmg, fx });
+            }
+
+            document.getElementById('roll-result-container').innerHTML = `
+                <div class="space-y-2">
+                    <div class="text-[10px] text-purple-300 font-bold">CHALLENGE DICE (${count}D6) RESULT</div>
+                    <div class="text-2xl font-bold text-purple-400">${totalDamage} DMG / ${totalEffects} FX</div>
+                    <div class="flex flex-wrap gap-1 justify-center pt-1">
+                        ${rolls.map(r => `
+                            <span class="px-1.5 py-0.5 rounded font-mono font-bold bg-gray-800 border border-purple-400 text-amber-300 text-[10px]">
+                                D6:${r.roll} (${r.dmg} Dmg)
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function addLogEntry(msg) {
+            character.logs.unshift(`[${new Date().toLocaleTimeString()}] ${msg}`);
+            if (character.logs.length > 50) character.logs.pop();
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('log-stream-container');
+            if (container) container.innerHTML = character.logs.map(l => `<div class="text-amber-400/90 border-b border-gray-900 pb-0.5">${l}</div>`).join('');
         }
 
         function addManualLogEntry() {
             const input = document.getElementById('manual-log-input');
-            if (input && input.value.trim()) {
-                soundEngine.playBeep();
-                character.logs.unshift(`[${new Date().toLocaleTimeString()}] ${input.value.trim()}`);
+            if (input.value.trim() !== '') {
+                addLogEntry(`CAPTAIN'S LOG: ${input.value.trim()}`);
                 input.value = '';
-                renderLogsPadd();
             }
         }
 
-        function renderLogsPadd() {
-            const container = document.getElementById('log-stream-container');
-            if (container) {
-                container.innerHTML = character.logs.map(l => `<div class="text-amber-400/90">${l}</div>`).join('');
+        function clearLogStream() { character.logs = []; addLogEntry("Log stream purged."); }
+
+        function toggleRedAlert() {
+            redAlertActive = !redAlertActive;
+            const app = document.getElementById('viewport-wrapper');
+            if (redAlertActive) app.classList.add('red-alert-active');
+            else app.classList.remove('red-alert-active');
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(character, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `adam_winfield_lcars_${Date.now()}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click(); dlAnchor.remove();
+        }
+
+        function importData(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    character = JSON.parse(e.target.result);
+                    renderAllPadd();
+                } catch(err) { alert("INVALID JSON FORMAT."); }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        function resetCharacterData() {
+            if (confirm("RESET DOSSIER TO DEFAULT?")) {
+                character = JSON.parse(JSON.stringify(DEFAULT_CHARACTER));
+                renderAllPadd();
             }
-        }
-
-        function openModal(id) {
-            soundEngine.playBeep(700);
-            document.getElementById('modalOverlay').classList.remove('hidden');
-            document.querySelectorAll('.modal-content').forEach(e => e.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            updateAllUI();
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.add('hidden');
         }
 
         window.onload = function() {
-            renderSchematics();
+            if (character.logs.length === 0) addLogEntry("LCARS Terminal Initialized.");
             updateAllUI();
         };
     </script>
