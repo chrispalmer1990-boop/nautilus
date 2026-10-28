@@ -310,6 +310,7 @@
                             </pattern>
                             <rect width="1000" height="500" fill="url(#lcars-grid)" />
 
+                            <!-- Akira Class Hull Wireframe -->
                             <g stroke="#ff9900" stroke-width="1.5" fill="none" opacity="0.4">
                                 <path d="M 250 150 C 400 120, 650 120, 750 170 C 820 200, 850 250, 750 300 C 650 350, 400 350, 250 320 Z"/>
                                 <path d="M 400 135 L 450 70 L 650 70 L 700 135 Z"/>
@@ -317,8 +318,10 @@
                                 <path d="M 100 390 L 350 340 L 320 310 L 80 360 Z"/>
                             </g>
 
+                            <!-- Interactive Rooms Group -->
                             <g id="rooms-group"></g>
 
+                            <!-- Deck Annotations -->
                             <g font-size="10" fill="#ffcc00" font-family="Antonio">
                                 <text x="860" y="85">DECK 01 - CATAMARAN / BRIDGE</text>
                                 <text x="860" y="125">DECK 03 - TAC COMMAND</text>
@@ -806,8 +809,9 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <!-- PART 2 JAVASCRIPT ENGINE GOES BELOW THIS LINE -->
     <script>
+        // Auto-scaling viewport engine
         function autoScaleLCARS() {
             const wrapper = document.getElementById('viewport-wrapper');
             const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
@@ -816,53 +820,115 @@
         window.addEventListener('resize', autoScaleLCARS);
         window.addEventListener('load', autoScaleLCARS);
 
-        /* MASTER SHIP UNIFIED STATE */
+        // Master Unified Ship State (Shared Resource Pools & Room Schematics)
         const shipState = {
             cycle: 1,
             hullIntegrity: 84,
             shuttles: 3,
             fighters: 6,
-            resources: { rmats: 500, photons: 100, quantums: 88 },
+            resources: {
+                rmats: 500,
+                photons: 100,
+                quantums: 88
+            },
             scienceTasks: [],
             engTasks: [],
             rooms: [
                 { id: 'room-bridge', name: 'Main Bridge', deck: 1, x: 500, y: 75, w: 90, h: 25, status: 'Normal', special: 'bridge' },
-                { id: 'room-sci-lab', name: 'Main Science Lab', deck: 4, x: 430, y: 130, w: 80, h: 25, status: 'Normal', special: 'science' },
-                { id: 'room-torp-fwd', name: 'Forward Torpedo Bay', deck: 6, x: 385, y: 165, w: 85, h: 25, status: 'Normal', special: 'torpedo' },
-                { id: 'room-shuttlebay-1', name: 'Primary Shuttlebay', deck: 10, x: 260, y: 245, w: 120, h: 30, status: 'Normal', special: 'shuttle' },
-                { id: 'room-engineering', name: 'Main Engineering', deck: 12, x: 320, y: 285, w: 110, h: 30, status: 'Normal', special: 'engineering' }
+                { id: 'room-aux-bridge', name: 'Auxiliary Command', deck: 2, x: 490, y: 102, w: 110, h: 22, status: 'Normal' },
+                { id: 'room-tac-center', name: 'Tactical Command', deck: 3, x: 450, y: 126, w: 120, h: 24, status: 'Normal' },
+                { id: 'room-sci-lab', name: 'Main Science Lab', deck: 4, x: 430, y: 152, w: 90, h: 24, status: 'Normal', special: 'science' },
+                { id: 'room-sickbay', name: 'Main Sickbay', deck: 5, x: 525, y: 152, w: 85, h: 24, status: 'Normal' },
+                { id: 'room-torp-fwd', name: 'Forward Torpedo Bay', deck: 6, x: 385, y: 178, w: 85, h: 24, status: 'Normal', special: 'torpedo' },
+                { id: 'room-armory', name: 'Armory & Security', deck: 7, x: 475, y: 178, w: 95, h: 24, status: 'Normal' },
+                { id: 'room-transporter', name: 'Transporter Rooms', deck: 8, x: 575, y: 178, w: 80, h: 24, status: 'Normal' },
+                { id: 'room-crew-quarters', name: 'Crew Quarters', deck: 9, x: 350, y: 204, w: 130, h: 24, status: 'Normal' },
+                { id: 'room-mess-hall', name: 'Mess Hall & Wardroom', deck: 9, x: 485, y: 204, w: 110, h: 24, status: 'Normal' },
+                { id: 'room-shuttlebay-1', name: 'Primary Shuttlebay', deck: 10, x: 260, y: 230, w: 120, h: 30, status: 'Normal', special: 'shuttle' },
+                { id: 'room-shuttlebay-2', name: 'Secondary Shuttlebay', deck: 11, x: 385, y: 230, w: 110, h: 30, status: 'Normal', special: 'shuttle' },
+                { id: 'room-engineering', name: 'Main Engineering', deck: 12, x: 320, y: 262, w: 110, h: 30, status: 'Normal', special: 'engineering' },
+                { id: 'room-deuterium', name: 'Deuterium Fuel Tanks', deck: 13, x: 435, y: 262, w: 100, h: 30, status: 'Normal' },
+                { id: 'room-cargo-1', name: 'Primary Cargo Bay', deck: 14, x: 280, y: 294, w: 120, h: 28, status: 'Normal' },
+                { id: 'room-cargo-2', name: 'Secondary Cargo Bay', deck: 15, x: 405, y: 294, w: 110, h: 28, status: 'Normal' }
             ]
         };
 
-        /* MASTER CAPTAIN'S PADD STATE */
+        // Starfleet Ranks Array
         const STARFLEET_RANKS = [
             "CADET", "ENSIGN", "LIEUTENANT (J.G.)", "LIEUTENANT", "LIEUTENANT COMMANDER",
             "COMMANDER", "CAPTAIN", "REAR ADMIRAL", "VICE ADMIRAL", "ADMIRAL", "FLEET ADMIRAL"
         ];
 
+        // Captain Adam Winfield Character Sheet Baseline State
         const DEFAULT_CHARACTER = {
-            name: "ADAM WINFIELD", pronouns: "HE/HIM", species: "HUMAN", rank: "COMMANDER", assignment: "COMMANDING OFFICER",
-            environment: "HOMEWORLD", earlyOutlook: "MILITARY OR EXPLORATION", education: "CIVILIAN EXPERT", careerLength: "EXPERIENCED",
-            vitals: { maxHp: 12, currentHp: 12, momentum: 6, determination: 3 },
-            attributes: { Control: 11, Daring: 8, Fitness: 8, Insight: 10, Presence: 8, Reason: 11 },
-            disciplines: { Command: 3, Conn: 3, Security: 1, Engineering: 4, Science: 4, Medicine: 1 },
-            focuses: ["RESEARCH", "UNORTHODOX MATHEMATICS", "PHYSICS", "COMPUTER SCIENCE", "STARSHIP RECOGNITION", "ARTIFICIAL INTELLIGENCE SYSTEMS"],
-            values: ["INFORMATION IS POWER", "A GOOD MYSTERY IS IRRESISTIBLE", "ACT WITH CONFIDENCE, EVEN IF YOU DON'T FEEL CONFIDENT", "NEVER LEAVE A STONE UNTURNED"],
+            name: "ADAM WINFIELD",
+            pronouns: "HE/HIM",
+            species: "HUMAN",
+            rank: "COMMANDER",
+            assignment: "COMMANDING OFFICER",
+            environment: "HOMEWORLD",
+            earlyOutlook: "MILITARY OR EXPLORATION",
+            education: "CIVILIAN - SCIENTIFIC OR TECHNICAL EXPERT",
+            careerLength: "EXPERIENCED",
+            careerEvents: ["MENTORED", "DISCOVERS AN ARTIFACT"],
+            vitals: {
+                maxHp: 12,
+                currentHp: 12,
+                momentum: 6,
+                determination: 3
+            },
+            attributes: {
+                Control: 11,
+                Daring: 8,
+                Fitness: 8,
+                Insight: 10,
+                Presence: 8,
+                Reason: 11
+            },
+            disciplines: {
+                Command: 3,
+                Conn: 3,
+                Security: 1,
+                Engineering: 4,
+                Science: 4,
+                Medicine: 1
+            },
+            focuses: [
+                "RESEARCH",
+                "UNORTHODOX MATHEMATICS",
+                "PHYSICS",
+                "COMPUTER SCIENCE",
+                "STARSHIP RECOGNITION",
+                "ARTIFICIAL INTELLIGENCE SYSTEMS"
+            ],
+            values: [
+                "INFORMATION IS POWER",
+                "A GOOD MYSTERY IS IRRESISTIBLE",
+                "ACT WITH CONFIDENCE, EVEN IF YOU DON'T FEEL CONFIDENT",
+                "NEVER LEAVE A STONE UNTURNED"
+            ],
             inventory: [
                 { id: "1", name: "STARFLEET COMBADGE", category: "Tech", qty: 1, desc: "Standard issue communicator and locational transponder.", equipped: true },
                 { id: "2", name: "PHASER TYPE II", category: "Weapons", qty: 1, desc: "Standard sidearm with stun and vaporize settings.", equipped: true },
-                { id: "3", name: "TRICORDER MK-VII", category: "Tech", qty: 1, desc: "High-resolution sensor suite for field analysis.", equipped: true }
+                { id: "3", name: "TRICORDER MK-VII", category: "Tech", qty: 1, desc: "High-resolution sensor suite for field analysis.", equipped: true },
+                { id: "4", name: "COMMAND UNIFORM", category: "Equipment", qty: 1, desc: "Duty attire with integrated environmental lining.", equipped: true }
             ],
             logs: []
         };
+
         let character = JSON.parse(JSON.stringify(DEFAULT_CHARACTER));
         let redAlertActive = false;
         let currentActiveFilter = "All";
 
-        /* AUDIO ENGINE */
+        // Web Audio API Synthesizer for LCARS Audio Feedback
         class LcarsAudioEngine {
-            constructor() { this.ctx = null; this.muted = false; }
-            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
             playBeep(freq = 750, type = 'sine', duration = 0.08) {
                 if (this.muted) return;
                 this.init();
@@ -873,8 +939,10 @@
                     osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
                     gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                    osc.connect(gain); gain.connect(this.ctx.destination);
-                    osc.start(); osc.stop(this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
                 } catch(e){}
             }
         }
@@ -888,29 +956,29 @@
             if (b2) b2.innerHTML = soundEngine.muted ? `<i class="fas fa-volume-mute"></i> AUDIO: OFF` : `<i class="fas fa-volume-up"></i> AUDIO: ON`;
         }
 
-        /* REFRESH UI & CROSS-SYNC ENGINE */
+        // Live Cross-System UI Synchronization Engine
         function updateAllUI() {
-            // Cycle Updates
-            document.getElementById('main-menu-cycle').innerText = shipState.cycle;
-            document.getElementById('overview-cycle-display').innerText = shipState.cycle;
-            document.getElementById('ops-cycle-header').innerText = shipState.cycle;
+            // Synchronize Cycle Counter across all modules
+            const mMenuCycle = document.getElementById('main-menu-cycle'); if (mMenuCycle) mMenuCycle.innerText = shipState.cycle;
+            const ovCycle = document.getElementById('overview-cycle-display'); if (ovCycle) ovCycle.innerText = shipState.cycle;
+            const opsCycle = document.getElementById('ops-cycle-header'); if (opsCycle) opsCycle.innerText = shipState.cycle;
 
             // Overview Readouts
-            document.getElementById('overview-hull').innerText = `${shipState.hullIntegrity}%`;
-            document.getElementById('overview-rmats').innerText = shipState.resources.rmats;
-            document.getElementById('overview-torps').innerText = shipState.resources.photons + shipState.resources.quantums;
-            document.getElementById('overview-teams').innerText = shipState.engTasks.length;
+            const ovHull = document.getElementById('overview-hull'); if (ovHull) ovHull.innerText = `${shipState.hullIntegrity}%`;
+            const ovRmats = document.getElementById('overview-rmats'); if (ovRmats) ovRmats.innerText = shipState.resources.rmats;
+            const ovTorps = document.getElementById('overview-torps'); if (ovTorps) ovTorps.innerText = shipState.resources.photons + shipState.resources.quantums;
+            const ovTeams = document.getElementById('overview-teams'); if (ovTeams) ovTeams.innerText = shipState.engTasks.length;
 
             // Operations Readouts
-            document.getElementById('ops-hull-val').innerText = `${shipState.hullIntegrity}%`;
-            document.getElementById('ops-hull-bar').style.width = `${shipState.hullIntegrity}%`;
-            document.getElementById('ops-rmats-val').innerText = shipState.resources.rmats;
-            document.getElementById('ops-photons-val').innerText = shipState.resources.photons;
-            document.getElementById('ops-quantums-val').innerText = shipState.resources.quantums;
-            document.getElementById('ops-shuttles-val').innerText = shipState.shuttles;
-            document.getElementById('ops-fighters-val').innerText = shipState.fighters;
+            const opsHull = document.getElementById('ops-hull-val'); if (opsHull) opsHull.innerText = `${shipState.hullIntegrity}%`;
+            const opsHullBar = document.getElementById('ops-hull-bar'); if (opsHullBar) opsHullBar.style.width = `${shipState.hullIntegrity}%`;
+            const opsRmats = document.getElementById('ops-rmats-val'); if (opsRmats) opsRmats.innerText = shipState.resources.rmats;
+            const opsPhotons = document.getElementById('ops-photons-val'); if (opsPhotons) opsPhotons.innerText = shipState.resources.photons;
+            const opsQuantums = document.getElementById('ops-quantums-val'); if (opsQuantums) opsQuantums.innerText = shipState.resources.quantums;
+            const opsShuttles = document.getElementById('ops-shuttles-val'); if (opsShuttles) opsShuttles.innerText = shipState.shuttles;
+            const opsFighters = document.getElementById('ops-fighters-val'); if (opsFighters) opsFighters.innerText = shipState.fighters;
 
-            // Modal sync
+            // Modals Synchronization
             const mP = document.getElementById('modal-photons'); if (mP) mP.innerText = shipState.resources.photons;
             const mQ = document.getElementById('modal-quantums'); if (mQ) mQ.innerText = shipState.resources.quantums;
             const mR = document.getElementById('modal-rmats'); if (mR) mR.innerText = shipState.resources.rmats;
@@ -921,37 +989,63 @@
             renderSchematics();
         }
 
-        /* PHASE CYCLES */
+        // Phase Cycle Engine (Advances time, task queues, and turns across views)
         function executePhaseCycles(count) {
             const num = count || parseInt(document.getElementById('phaseCycleInput').value) || 1;
             shipState.cycle += num;
-            
-            // Advance Science & Engineering Task progress
-            shipState.engTasks.forEach(task => { task.progress += num * 25; if (task.progress >= 100) task.progress = 100; });
-            shipState.scienceTasks.forEach(task => { task.progress += num * 20; if (task.progress >= 100) task.progress = 100; });
+
+            // Progress active repair and science teams
+            shipState.engTasks.forEach(task => {
+                task.progress += num * 25;
+                if (task.progress >= 100) {
+                    task.progress = 100;
+                    if (task.type === 'Repair Hull') {
+                        shipState.hullIntegrity = Math.min(100, shipState.hullIntegrity + 15);
+                    } else if (task.roomId) {
+                        const room = shipState.rooms.find(r => r.id === task.roomId);
+                        if (room) room.status = 'Normal';
+                    }
+                }
+            });
+
+            shipState.scienceTasks.forEach(task => {
+                task.progress += num * 20;
+                if (task.progress >= 100) task.progress = 100;
+            });
 
             soundEngine.playBeep(880);
             updateAllUI();
         }
 
-        function quickSetCycles(val) { document.getElementById('phaseCycleInput').value = val; }
+        function quickSetCycles(val) {
+            document.getElementById('phaseCycleInput').value = val;
+        }
 
+        // Torpedo Fabrication Rules Engine
         function fabricateTorpedoes(qty) {
-            const totalCost = qty * 10;
+            const costPerUnit = 10;
+            const totalCost = qty * costPerUnit;
             if (shipState.resources.rmats >= totalCost) {
                 shipState.resources.rmats -= totalCost;
                 shipState.resources.photons += qty;
                 soundEngine.playBeep(900);
-                addLogEntry(`Torpedo Fabrication Complete: +${qty} Photons added.`);
+                addLogEntry(`TORPEDO FABRICATION: +${qty} Photons manufactured (-${totalCost} R-MATS).`);
                 updateAllUI();
-            } else { alert("INSUFFICIENT R-MATS!"); }
+            } else {
+                alert("INSUFFICIENT R-MATS FOR FABRICATION REQUIREMENT!");
+            }
         }
 
         function fireTorpedo(type) {
             if (type === 'photon' && shipState.resources.photons > 0) {
                 shipState.resources.photons--;
                 soundEngine.playBeep(300, 'sawtooth', 0.2);
-                addLogEntry("Tactical Update: Photon Torpedo Discharged.");
+                addLogEntry("TACTICAL ALERT: Photon torpedo launched.");
+                updateAllUI();
+            } else if (type === 'quantum' && shipState.resources.quantums > 0) {
+                shipState.resources.quantums--;
+                soundEngine.playBeep(450, 'sawtooth', 0.2);
+                addLogEntry("TACTICAL ALERT: Quantum torpedo launched.");
                 updateAllUI();
             }
         }
@@ -960,23 +1054,35 @@
             if (shipState.shuttles > 0) {
                 shipState.shuttles--;
                 soundEngine.playBeep(600);
-                addLogEntry(`Flight Operations: Launched ${type}.`);
+                addLogEntry(`FLIGHT DECK: ${type} launched.`);
                 updateAllUI();
             }
         }
 
-        /* SCHEMATICS SVG */
+        // SVG Deck Map Schematics Renderer & Diagnostic Interactivity
         function renderSchematics() {
             const group = document.getElementById('rooms-group');
             if (!group) return;
             group.innerHTML = '';
             shipState.rooms.forEach(room => {
                 const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rect.setAttribute('x', room.x); rect.setAttribute('y', room.y);
-                rect.setAttribute('width', room.w); rect.setAttribute('height', room.h);
+                rect.setAttribute('x', room.x);
+                rect.setAttribute('y', room.y);
+                rect.setAttribute('width', room.w);
+                rect.setAttribute('height', room.h);
                 rect.setAttribute('rx', 4);
                 rect.setAttribute('class', `status-${room.status.toLowerCase()} cursor-pointer`);
-                rect.addEventListener('mouseenter', () => { document.getElementById('selected-room-name').innerText = `${room.name} (DECK ${room.deck})`; });
+
+                rect.addEventListener('mouseenter', () => {
+                    const label = document.getElementById('selected-room-name');
+                    if (label) label.innerText = `${room.name} (DECK ${room.deck}) • STATUS: ${room.status.toUpperCase()}`;
+                });
+
+                rect.addEventListener('mouseleave', () => {
+                    const label = document.getElementById('selected-room-name');
+                    if (label) label.innerText = "Hover or Click a Room";
+                });
+
                 rect.addEventListener('click', () => {
                     soundEngine.playBeep(850);
                     if (room.special === 'bridge') openModal('bridgeModal');
@@ -990,25 +1096,29 @@
         }
 
         function resetShipStatus() {
-            shipState.rooms.forEach(r => { if (Math.random() > 0.5) r.status = 'Damaged'; });
-            shipState.hullIntegrity = Math.floor(60 + Math.random() * 30);
+            shipState.rooms.forEach(r => {
+                if (Math.random() > 0.6) r.status = 'Damaged';
+            });
+            shipState.hullIntegrity = Math.floor(55 + Math.random() * 35);
             updateAllUI();
         }
 
         function repairAllRooms() {
             shipState.rooms.forEach(r => r.status = 'Normal');
             shipState.hullIntegrity = 100;
+            shipState.engTasks = [];
             updateAllUI();
         }
 
-        /* ENGINEERING & SCIENCE DISPATCHERS */
+        // Engineering Dispatchers & Science Lab Queue
         function populateEngRoomDropdown() {
             const select = document.getElementById('engRoomSelect');
             if (!select) return;
             select.innerHTML = '';
             shipState.rooms.forEach(r => {
                 const opt = document.createElement('option');
-                opt.value = r.id; opt.innerText = r.name;
+                opt.value = r.id;
+                opt.innerText = `Deck ${r.deck}: ${r.name}`;
                 select.appendChild(opt);
             });
         }
@@ -1017,7 +1127,13 @@
             const type = document.getElementById('engTaskType').value;
             const roomId = document.getElementById('engRoomSelect').value;
             const room = shipState.rooms.find(r => r.id === roomId);
-            shipState.engTasks.push({ id: Date.now(), type, roomName: room ? room.name : 'Hull', progress: 0 });
+            shipState.engTasks.push({
+                id: Date.now(),
+                type: type,
+                roomId: roomId,
+                roomName: room ? room.name : 'Hull Structure',
+                progress: 0
+            });
             soundEngine.playBeep(700);
             updateAllUI();
         }
@@ -1025,18 +1141,27 @@
         function renderEngTasks() {
             const list = document.getElementById('engTasksList');
             if (!list) return;
+            if (shipState.engTasks.length === 0) {
+                list.innerHTML = `<div class="text-gray-500 font-mono text-center py-4">NO ACTIVE ENGINEERING DISPATCHES</div>`;
+                return;
+            }
             list.innerHTML = shipState.engTasks.map(t => `
                 <div class="border border-slate-700 p-2 rounded mb-1 bg-black">
-                    <div class="flex justify-between font-bold"><span>${t.type} - ${t.roomName}</span><span>${t.progress}%</span></div>
-                    <div class="w-full bg-slate-800 h-2 rounded overflow-hidden mt-1"><div class="bg-amber-400 h-full" style="width:${t.progress}%"></div></div>
+                    <div class="flex justify-between font-bold">
+                        <span>${t.type} - ${t.roomName}</span>
+                        <span class="text-amber-400 font-mono">${t.progress}%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded overflow-hidden mt-1">
+                        <div class="bg-amber-400 h-full transition-all duration-300" style="width:${t.progress}%"></div>
+                    </div>
                 </div>
             `).join('');
         }
 
         function startScienceResearch() {
             const text = document.getElementById('scienceTaskInput').value;
-            if (!text) return;
-            shipState.scienceTasks.push({ id: Date.now(), desc: text, progress: 0 });
+            if (!text || !text.trim()) return;
+            shipState.scienceTasks.push({ id: Date.now(), desc: text.trim().toUpperCase(), progress: 0 });
             document.getElementById('scienceTaskInput').value = '';
             soundEngine.playBeep(750);
             updateAllUI();
@@ -1045,15 +1170,66 @@
         function renderScienceTasks() {
             const list = document.getElementById('scienceTasksList');
             if (!list) return;
+            if (shipState.scienceTasks.length === 0) {
+                list.innerHTML = `<div class="text-gray-500 font-mono text-center py-4">NO CURRENT SENSOR ANALYSES</div>`;
+                return;
+            }
             list.innerHTML = shipState.scienceTasks.map(t => `
                 <div class="border border-amber-500/40 p-2 rounded mb-1 bg-black">
-                    <div class="flex justify-between font-bold"><span>${t.desc}</span><span>${t.progress}%</span></div>
-                    <div class="w-full bg-slate-800 h-2 rounded overflow-hidden mt-1"><div class="bg-sky-400 h-full" style="width:${t.progress}%"></div></div>
+                    <div class="flex justify-between font-bold">
+                        <span>${t.desc}</span>
+                        <span class="text-sky-400 font-mono">${t.progress}%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded overflow-hidden mt-1">
+                        <div class="bg-sky-400 h-full transition-all duration-300" style="width:${t.progress}%"></div>
+                    </div>
                 </div>
             `).join('');
         }
 
-        /* VIEW SWITCHER */
+        // Animated Bridge Viewscreen Canvas Renderer
+        function initBridgeCanvas() {
+            const canvas = document.getElementById('bridgeViewscreenCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            let stars = Array.from({ length: 60 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                z: Math.random() * canvas.width
+            }));
+
+            function drawViewscreen() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#ffffff';
+                stars.forEach(s => {
+                    s.z -= 1.5;
+                    if (s.z <= 0) s.z = canvas.width;
+                    const k = 128 / s.z;
+                    const px = (s.x - canvas.width / 2) * k + canvas.width / 2;
+                    const py = (s.y - canvas.height / 2) * k + canvas.height / 2;
+                    const size = Math.max(0.5, (1 - s.z / canvas.width) * 2.5);
+                    if (px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
+                        ctx.beginPath();
+                        ctx.arc(px, py, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+
+                ctx.strokeStyle = '#3399cc';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+                requestAnimationFrame(drawViewscreen);
+            }
+            drawViewscreen();
+        }
+
+        // Navigation Controller
         function switchView(viewName) {
             soundEngine.playBeep(800);
             document.getElementById('view-main-menu').classList.add('hidden');
@@ -1073,18 +1249,19 @@
             updateAllUI();
         }
 
-        /* MODALS CONTROLLER */
+        // Modals Management
         function openModal(id) {
             soundEngine.playBeep(700);
             document.getElementById('modalOverlay').classList.remove('hidden');
             document.querySelectorAll('.modal-content').forEach(e => e.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if (id === 'engineeringModal') populateEngRoomDropdown();
+            if (id === 'bridgeModal') setTimeout(initBridgeCanvas, 50);
             updateAllUI();
         }
         function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
 
-        /* CAPTAIN'S PADD FULL LOGIC */
+        // Captain's PADD Character Dossier & Tactical Roller Logic
         function switchPaddTab(tabId) {
             soundEngine.playBeep();
             document.querySelectorAll('#view-padd .tab-view').forEach(view => view.classList.add('hidden'));
@@ -1131,7 +1308,7 @@
         function setRankFromSelect(newRank) {
             if (newRank && newRank !== character.rank) {
                 character.rank = newRank;
-                addLogEntry(`[RANK UPDATE] Starfleet commission adjusted to ${newRank}.`);
+                addLogEntry(`[RANK UPDATE] Commission adjusted: ${character.name} set to ${newRank}.`);
                 renderAllPadd();
             }
         }
@@ -1142,7 +1319,7 @@
             const newIdx = currIdx + delta;
             if (newIdx >= 0 && newIdx < STARFLEET_RANKS.length) {
                 character.rank = STARFLEET_RANKS[newIdx];
-                addLogEntry(`Rank adjusted to: ${character.rank}.`);
+                addLogEntry(`Rank Progression: ${character.rank}.`);
                 renderAllPadd();
             }
         }
@@ -1161,33 +1338,34 @@
 
         function adjustHP(delta) {
             character.vitals.currentHp = Math.max(0, Math.min(character.vitals.maxHp, character.vitals.currentHp + delta));
-            addLogEntry(`Stress level updated: ${character.vitals.currentHp}/${character.vitals.maxHp} HP.`);
+            addLogEntry(`Vitals update: HP set to ${character.vitals.currentHp}/${character.vitals.maxHp}.`);
             renderVitals();
         }
 
         function fullRestHP() {
             character.vitals.currentHp = character.vitals.maxHp;
-            addLogEntry("Medical Rest Initiated: Health restored.");
+            addLogEntry("Medical Rest: Stress eliminated.");
             renderVitals();
         }
 
         function adjustCounter(type, delta) {
             character.vitals[type] = Math.max(0, character.vitals[type] + delta);
-            addLogEntry(`Resource updated: ${type.toUpperCase()} set to ${character.vitals[type]}.`);
+            addLogEntry(`Tactical Resource: ${type.toUpperCase()} adjusted to ${character.vitals[type]}.`);
             renderVitals();
         }
 
         function renderAttributes() {
             const container = document.getElementById('attributes-container');
+            if (!container) return;
             container.innerHTML = '';
             for (const [key, value] of Object.entries(character.attributes)) {
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-950 p-1 rounded border border-gray-800 text-xs">
+                    <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800 text-xs">
                         <span class="font-bold text-amber-400">${key}</span>
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-white">${value}</span>
-                            <button onclick="adjustStat('attributes', '${key}', -1)" class="px-1.5 bg-gray-800 text-amber-400 font-bold rounded">-</button>
-                            <button onclick="adjustStat('attributes', '${key}', 1)" class="px-1.5 bg-gray-800 text-amber-400 font-bold rounded">+</button>
+                            <span class="font-bold text-white w-5 text-center">${value}</span>
+                            <button onclick="adjustStat('attributes', '${key}', -1)" class="w-5 h-5 bg-gray-800 text-amber-400 font-bold rounded">-</button>
+                            <button onclick="adjustStat('attributes', '${key}', 1)" class="w-5 h-5 bg-gray-800 text-amber-400 font-bold rounded">+</button>
                         </div>
                     </div>
                 `;
@@ -1196,15 +1374,16 @@
 
         function renderDisciplines() {
             const container = document.getElementById('disciplines-container');
+            if (!container) return;
             container.innerHTML = '';
             for (const [key, value] of Object.entries(character.disciplines)) {
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-950 p-1 rounded border border-gray-800 text-xs">
+                    <div class="flex justify-between items-center bg-gray-950 p-1.5 rounded border border-gray-800 text-xs">
                         <span class="font-bold text-purple-300">${key}</span>
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-white">${value}</span>
-                            <button onclick="adjustStat('disciplines', '${key}', -1)" class="px-1.5 bg-gray-800 text-purple-300 font-bold rounded">-</button>
-                            <button onclick="adjustStat('disciplines', '${key}', 1)" class="px-1.5 bg-gray-800 text-purple-300 font-bold rounded">+</button>
+                            <span class="font-bold text-white w-5 text-center">${value}</span>
+                            <button onclick="adjustStat('disciplines', '${key}', -1)" class="w-5 h-5 bg-gray-800 text-purple-300 font-bold rounded">-</button>
+                            <button onclick="adjustStat('disciplines', '${key}', 1)" class="w-5 h-5 bg-gray-800 text-purple-300 font-bold rounded">+</button>
                         </div>
                     </div>
                 `;
@@ -1218,18 +1397,22 @@
 
         function renderFocusesAndValues() {
             const focContainer = document.getElementById('focuses-list');
-            focContainer.innerHTML = character.focuses.map((f, i) => `
-                <span class="bg-sky-950 border border-sky-400 text-sky-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                    ${f} <button onclick="removeFocus(${i})" class="hover:text-red-400 ml-1">&times;</button>
-                </span>
-            `).join('');
+            if (focContainer) {
+                focContainer.innerHTML = character.focuses.map((f, i) => `
+                    <span class="bg-sky-950 border border-sky-400 text-sky-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                        ${f} <button onclick="removeFocus(${i})" class="hover:text-red-400 ml-1">&times;</button>
+                    </span>
+                `).join('');
+            }
 
             const valContainer = document.getElementById('values-list');
-            valContainer.innerHTML = character.values.map(v => `<li class="bg-gray-950 p-1 rounded border-l-2 border-amber-500 font-semibold">"${v}"</li>`).join('');
+            if (valContainer) {
+                valContainer.innerHTML = character.values.map(v => `<li class="bg-gray-950 p-1.5 rounded border-l-2 border-amber-500 font-semibold">"${v}"</li>`).join('');
+            }
         }
 
         function addNewFocus() {
-            const n = prompt("ENTER NEW FOCUS:");
+            const n = prompt("ENTER NEW SPECIALIZED FOCUS:");
             if (n && n.trim()) { character.focuses.push(n.trim().toUpperCase()); renderFocusesAndValues(); }
         }
         function removeFocus(i) { character.focuses.splice(i, 1); renderFocusesAndValues(); }
@@ -1241,7 +1424,8 @@
 
         function renderInventory() {
             const grid = document.getElementById('inventory-grid');
-            const search = document.getElementById('inventory-search').value.toLowerCase();
+            if (!grid) return;
+            const search = (document.getElementById('inventory-search')?.value || '').toLowerCase();
             grid.innerHTML = '';
 
             const filtered = character.inventory.filter(item => {
@@ -1286,7 +1470,7 @@
             renderInventory();
         }
 
-        /* STA TASK DICE ROLLER */
+        // STA Task Check & D6 Challenge Dice Engines
         function populateRollSelects() {
             const attrSelect = document.getElementById('roll-attr-select');
             const discSelect = document.getElementById('roll-disc-select');
@@ -1294,7 +1478,7 @@
 
             attrSelect.innerHTML = Object.keys(character.attributes).map(k => `<option value="${k}">${k.toUpperCase()} (${character.attributes[k]})</option>`).join('');
             discSelect.innerHTML = Object.keys(character.disciplines).map(k => `<option value="${k}">${k.toUpperCase()} (${character.disciplines[k]})</option>`).join('');
-            
+
             attrSelect.onchange = updateCalculatedTN;
             discSelect.onchange = updateCalculatedTN;
             updateCalculatedTN();
@@ -1304,7 +1488,8 @@
             const a = document.getElementById('roll-attr-select').value;
             const d = document.getElementById('roll-disc-select').value;
             const tn = (character.attributes[a] || 0) + (character.disciplines[d] || 0);
-            document.getElementById('calculated-tn').innerText = tn;
+            const label = document.getElementById('calculated-tn');
+            if (label) label.innerText = tn;
         }
 
         function executeTaskRoll() {
@@ -1324,7 +1509,7 @@
                 let succCount = 0;
                 if (roll <= tn) {
                     succCount = 1;
-                    if (roll <= discVal) succCount = 2;
+                    if (roll <= discVal) succCount = 2; // Critical Success Rule
                 }
                 successes += succCount;
                 completions.push({ roll, succCount });
@@ -1343,7 +1528,7 @@
                     </div>
                 </div>
             `;
-            addLogEntry(`Task Check: ${attrKey}+${discKey} (TN:${tn}) -> ${successes} Successes.`);
+            addLogEntry(`Task Check Evaluated: ${attrKey}+${discKey} (TN:${tn}) -> ${successes} Successes.`);
         }
 
         function executeD6Roll() {
@@ -1423,14 +1608,14 @@
         }
 
         function resetCharacterData() {
-            if (confirm("RESET DOSSIER TO DEFAULT?")) {
+            if (confirm("REINITIALIZE TERMINAL DATA TO DEFAULT SPECIFICATIONS?")) {
                 character = JSON.parse(JSON.stringify(DEFAULT_CHARACTER));
                 renderAllPadd();
             }
         }
 
         window.onload = function() {
-            if (character.logs.length === 0) addLogEntry("LCARS Terminal Initialized.");
+            if (character.logs.length === 0) addLogEntry("LCARS Terminal Online. Dossier Adam Winfield loaded.");
             updateAllUI();
         };
     </script>
