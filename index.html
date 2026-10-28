@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCARS 2401 - USS NAUTILUS COMMAND INTERFACE</title>
-    <!-- Google Fonts: Antonio for LCARS aesthetic -->
+    <title>USS NAUTILUS - NCC-73515 | LCARS COMMAND INTERFACE</title>
+    
+    <!-- Google Fonts: Antonio, Share Tech Mono, Oswald -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS for base styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Oswald:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,1692 +31,854 @@
                             blue: '#3366CC',
                             darkblue: '#003366',
                             black: '#000000',
-                            panel: '#111122',
-                            
-                            // Muted Dim Yellow Alert Palette
-                            dimYellow: '#B8860B',
-                            dimYellowDark: '#3A2E0B',
-                            dimYellowText: '#D4AF37',
-                            dimYellowFrame: '#8B6508'
+                            peach: '#FF9966',
+                            tangerine: '#FF6600',
+                            gold: '#FFCC00'
                         }
                     },
                     fontFamily: {
                         lcars: ['Antonio', 'sans-serif'],
-                        mono: ['"Share Tech Mono"', 'monospace']
+                        mono: ['"Share Tech Mono"', 'monospace'],
+                        oswald: ['Oswald', 'sans-serif']
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        /* Authentic LCARS Custom Styling */
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-gold: #ffcc00;
+            --lcars-blue: #3399cc;
+            --lcars-red: #cc3333;
+            --lcars-peach: #ff9966;
+            --lcars-tangerine: #ff6600;
+            --lcars-lavender: #9999cc;
+            --lcars-bg: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             background-color: #000000;
             color: #FF9900;
-            font-family: 'Antonio', sans-serif;
+            font-family: 'Antonio', 'Oswald', sans-serif;
             text-transform: uppercase;
             letter-spacing: 1px;
             user-select: none;
-            overflow-x: hidden;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
+        /* Scaled Outer Viewport Box */
+        #viewport-wrapper {
+            width: 1280px;
+            height: 720px;
+            transform-origin: center center;
+            position: absolute;
             background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #CC99CC;
-            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
         }
 
-        /* LCARS Pill Buttons & Curves */
-        .lcars-pill {
+        /* Landscape Orientation Warning Guard */
+        #portrait-warning {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: #000000;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            color: #FF9900;
+        }
+
+        @media (orientation: portrait) {
+            #portrait-warning {
+                display: flex !important;
+            }
+        }
+
+        /* LCARS Controls & Styling */
+        .lcars-pill, .lcars-btn {
             border-radius: 20px;
             transition: all 0.15s ease-in-out;
+            cursor: pointer;
         }
-        .lcars-pill:active {
+        .lcars-pill:active, .lcars-btn:active {
             filter: brightness(1.4);
             transform: scale(0.98);
         }
 
-        /* Alert Mode Pulsing & Color Themes */
+        .lcars-elbow-left-top {
+            width: 140px;
+            height: 60px;
+            border-top-left-radius: 30px;
+            background-color: var(--lcars-orange);
+        }
+
+        /* Status Colors for Schematics */
+        .status-normal { fill: #3399cc; fill-opacity: 0.6; stroke: #3399cc; }
+        .status-damaged { fill: #cc3333; fill-opacity: 0.8; stroke: #ff9900; animation: lcars-blink 1.2s infinite alternate; }
+        .status-destroyed { fill: #222222; fill-opacity: 0.9; stroke: #ff0000; stroke-dasharray: 2 2; }
+        .status-upgraded { fill: #ffcc00; fill-opacity: 0.7; stroke: #ffffff; }
+
+        @keyframes lcars-blink {
+            0% { fill-opacity: 0.3; }
+            100% { fill-opacity: 0.95; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #CC99CC; border-radius: 4px; }
+
+        /* Red Alert Pulse */
         @keyframes redAlertPulse {
             0% { box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.4); border-color: #FF3333; }
             50% { box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.9); border-color: #FF0000; }
             100% { box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.4); border-color: #FF3333; }
         }
 
-        .alert-red-active {
+        .red-alert-active {
             animation: redAlertPulse 1.2s infinite ease-in-out;
             border: 2px solid #FF3333 !important;
         }
 
-        /* Dim Yellow Alert Mode Specific UI Override */
-        body.theme-yellow-alert {
-            background-color: #0A0802 !important;
-            color: #D4AF37 !important;
-        }
-
-        body.theme-yellow-alert .lcars-header-block {
-            background-color: #8B6508 !important;
-            color: #000000 !important;
-        }
-
-        body.theme-yellow-alert .lcars-header-sub {
-            background-color: #B8860B !important;
-            color: #000000 !important;
-        }
-
-        body.theme-yellow-alert .lcars-accent-text {
-            color: #D4AF37 !important;
-        }
-
-        body.theme-yellow-alert .lcars-border-accent {
-            border-color: #8B6508 !important;
-        }
-
-        /* Red Alert Mode Color Theme Override */
-        body.theme-red-alert {
-            background-color: #0A0000 !important;
-            color: #FF4444 !important;
-        }
-
-        body.theme-red-alert .lcars-header-block {
-            background-color: #CC0000 !important;
-            color: #FFFFFF !important;
-        }
-
-        body.theme-red-alert .lcars-header-sub {
-            background-color: #990000 !important;
-            color: #FFFFFF !important;
-        }
-
-        /* Custom Range Input */
-        input[type=range] {
-            -webkit-appearance: none;
-            background: #222;
-            height: 12px;
-            border-radius: 6px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 24px;
-            width: 16px;
-            border-radius: 4px;
-            background: #66CCCC;
-            cursor: pointer;
-        }
-
-        /* Warning Blink for low resource */
-        @keyframes lowResourceBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        .resource-critical {
-            animation: lowResourceBlink 0.8s infinite;
-            background-color: #FF3333 !important;
-            color: #FFFFFF !important;
-        }
-
-        @keyframes recordingPulse {
-            0% { background-color: #FF3333; }
-            50% { background-color: #990000; }
-            100% { background-color: #FF3333; }
-        }
-        .btn-recording {
-            animation: recordingPulse 1s infinite;
+        .lcars-panel-border {
+            border: 2px solid var(--lcars-orange);
+            border-radius: 12px;
         }
     </style>
 </head>
-<body class="p-2 sm:p-4 min-h-screen flex flex-col justify-between" id="lcars-body">
+<body id="lcars-body">
 
-    <!-- MAIN CONTAINER -->
-    <div id="main-container" class="max-w-7xl mx-auto w-full transition-all duration-500 rounded-xl p-2 sm:p-4 border-2 border-transparent">
+    <!-- PORTRAIT ORIENTATION WARNING OVERLAY -->
+    <div id="portrait-warning">
+        <div class="border-4 border-lcars-orange p-6 rounded-2xl max-w-sm flex flex-col items-center">
+            <div class="text-4xl mb-3">📱 🔄</div>
+            <h2 class="text-2xl font-bold text-lcars-orange mb-2">ORIENTATION ALERT</h2>
+            <p class="text-sm text-lcars-purple tracking-widest font-mono mb-4">PLEASE ROTATE DEVICE TO LANDSCAPE MODE TO ACCESS LCARS INTERFACE</p>
+            <div class="w-full bg-lcars-orange h-2 rounded-full"></div>
+        </div>
+    </div>
 
-        <!-- HEADER & TOP FRAMEWORK -->
-        <header class="flex flex-col md:flex-row items-stretch gap-2 mb-4">
-            <!-- Left LCARS Header Curve Block -->
-            <div class="flex items-center gap-2">
-                <div id="header-block-1" class="lcars-header-block bg-lcars-orange w-16 sm:w-24 h-16 sm:h-20 rounded-tl-3xl rounded-bl-lg flex flex-col justify-end p-2 text-black font-bold text-xs sm:text-sm leading-none transition-colors duration-300">
-                    <span>LCARS</span>
-                    <span class="text-lg sm:text-2xl">4792</span>
+    <!-- MAIN AUTO-SCALED VIEWPORT WRAPPER -->
+    <div id="viewport-wrapper">
+
+        <!-- ===================================================================
+             VIEW 1: MAIN LANDING MENU
+             =================================================================== -->
+        <div id="view-main-menu" class="w-full h-full flex flex-col justify-between">
+            <header class="flex items-stretch gap-4 h-24">
+                <div class="bg-lcars-orange w-32 rounded-tl-3xl rounded-bl-xl flex flex-col justify-end p-3 text-black font-bold">
+                    <span class="text-xs">LCARS</span>
+                    <span class="text-2xl">2401</span>
                 </div>
-                <div id="header-block-2" class="lcars-header-sub flex-1 bg-lcars-purple h-16 sm:h-20 rounded-r-full p-2 flex flex-col justify-center text-black transition-colors duration-300">
-                    <h1 class="text-2xl sm:text-4xl font-bold tracking-wider leading-none">U.S.S. NAUTILUS</h1>
-                    <p class="text-xs sm:text-sm font-semibold tracking-widest opacity-90">NCC-73515 • AKIRA CLASS HEAVY CRUISER</p>
+                <div class="flex-1 bg-lcars-purple rounded-r-full p-4 flex flex-col justify-center text-black">
+                    <h1 class="text-3xl font-bold tracking-widest">WELCOME TO THE USS NAUTILUS</h1>
+                    <p class="text-sm font-semibold tracking-widest opacity-90">NCC-73515 • AKIRA CLASS HEAVY CRUISER</p>
+                </div>
+            </header>
+
+            <div class="flex-1 my-4 flex gap-6 items-center">
+                <div class="w-48 h-full bg-lcars-deeporange rounded-l-3xl p-4 flex flex-col justify-between text-black font-bold">
+                    <div class="text-2xl">CYCLE: <span id="main-menu-cycle">1</span></div>
+                    <div class="space-y-2 font-mono text-xs opacity-80">
+                        <div>NAV-01: ONLINE</div>
+                        <div>TAC-04: NOMINAL</div>
+                        <div>ENG-09: READY</div>
+                    </div>
+                    <div class="text-2xl">73515</div>
+                </div>
+
+                <div class="flex-1 flex flex-col justify-center gap-6 max-w-2xl mx-auto">
+                    <button onclick="switchView('operations')" class="lcars-pill bg-lcars-orange hover:bg-yellow-400 text-black font-bold text-2xl py-5 px-8 shadow-lg flex items-center justify-between tracking-widest">
+                        <span>OPERATIONS</span>
+                        <span class="text-sm font-mono opacity-75">COMMAND MODULE ▶</span>
+                    </button>
+
+                    <button onclick="switchView('overview')" class="lcars-pill bg-lcars-purple hover:bg-pink-300 text-black font-bold text-2xl py-5 px-8 shadow-lg flex items-center justify-between tracking-widest">
+                        <span>OVERVIEW</span>
+                        <span class="text-sm font-mono opacity-75">DECK MAP & DIAGNOSTICS ▶</span>
+                    </button>
+
+                    <button onclick="switchView('padd')" class="lcars-pill bg-lcars-lavender hover:bg-indigo-300 text-black font-bold text-2xl py-5 px-8 shadow-lg flex items-center justify-between tracking-widest">
+                        <span>CAPTAIN'S PADD</span>
+                        <span class="text-sm font-mono opacity-75">CAPT. ADAM WINFIELD DOSSIER ▶</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Header Controls & Audio Toggles -->
-            <div class="flex-1 flex flex-wrap items-center justify-end gap-2 bg-black border-y-2 border-lcars-orange lcars-border-accent px-2 py-1">
-                <!-- Condition Alerts -->
-                <div class="flex items-center gap-1 bg-neutral-900 p-1 rounded-full border border-neutral-700">
-                    <button onclick="setAlertCondition('normal')" id="btn-alert-normal" class="lcars-pill px-3 py-1 text-xs font-bold bg-lcars-cyan text-black hover:brightness-110">GREEN / NORMAL</button>
-                    <button onclick="setAlertCondition('yellow')" id="btn-alert-yellow" class="lcars-pill px-3 py-1 text-xs font-bold bg-neutral-800 text-lcars-yellow hover:brightness-110">YELLOW ALERT</button>
-                    <button onclick="setAlertCondition('red')" id="btn-alert-red" class="lcars-pill px-3 py-1 text-xs font-bold bg-neutral-800 text-lcars-red hover:brightness-110">RED ALERT</button>
+            <footer class="flex justify-between items-center text-xs text-gray-500 border-t border-neutral-800 pt-2 font-mono">
+                <div>STARFLEET COMMAND • LCARS v2401.9</div>
+                <div class="text-lcars-orange">NCC-73515 OPERATIONAL STATE: NOMINAL</div>
+            </footer>
+        </div>
+
+
+        <!-- ===================================================================
+             VIEW 2: OVERVIEW SCHEMATICS & DECK ALLOCATION MAP
+             =================================================================== -->
+        <div id="view-overview" class="w-full h-full hidden flex-col justify-between">
+            <div class="flex items-center gap-2 mb-2">
+                <div onclick="switchView('main')" class="cursor-pointer lcars-elbow-left-top flex items-end justify-end pb-2 pr-3 text-black font-bold text-xl select-none">
+                    73515
                 </div>
-
-                <!-- Dedicated Silence Klaxon Button (Red Alert Active) -->
-                <button onclick="toggleSilenceKlaxon()" id="btn-silence-klaxon" class="hidden lcars-pill px-3 py-1.5 text-xs font-bold bg-lcars-red text-black animate-pulse flex items-center gap-1 hover:brightness-125">
-                    <span id="klaxon-icon">🚨</span> <span id="klaxon-text">SILENCE KLAXON</span>
-                </button>
-
-                <!-- Sound Controls -->
-                <div class="flex items-center gap-2">
-                    <button onclick="toggleAudioMute()" id="btn-audio-mute" class="lcars-pill px-3 py-2 text-xs font-bold bg-lcars-lavender text-black flex items-center gap-1">
-                        <span id="mute-icon">🔊</span> AUDIO: ON
-                    </button>
-                    <button onclick="toggleWarpHum()" id="btn-warp-hum" class="lcars-pill px-3 py-2 text-xs font-bold bg-lcars-deeporange text-black">
-                        CORE HUM: OFF
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- CYCLE ADVANCE TOP CONTROL PANEL -->
-        <section class="mb-4 bg-neutral-950 border-2 border-lcars-orange lcars-border-accent rounded-xl p-3 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-4 h-10 bg-lcars-orange rounded-l-md"></div>
-                <div>
-                    <div class="text-xs text-gray-400 font-mono">CHRONOMETER STARDATE ENGINE</div>
-                    <div class="text-2xl font-bold text-lcars-orange lcars-accent-text tracking-wider">
-                        MISSION CYCLE: <span id="current-cycle-display" class="text-3xl font-mono text-lcars-cyan">1</span>
+                <div class="flex-grow flex flex-col gap-1">
+                    <div class="h-8 bg-[var(--lcars-orange)] rounded-r-full flex items-center px-4 justify-between">
+                        <span class="text-black text-lg font-bold tracking-widest">USS NAUTILUS • DECK MAP & DIAGNOSTICS</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-black font-mono text-xs">CYCLE: <span id="overview-cycle-display" class="font-bold">1</span></span>
+                            <button onclick="switchView('main')" class="bg-black text-lcars-orange px-3 py-0.5 rounded-full text-xs font-bold hover:bg-neutral-800">◀ MAIN MENU</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Food Autonomy Forecast Banner -->
-            <div class="flex-1 bg-black p-2 rounded border border-neutral-800 flex items-center justify-between px-4">
-                <div class="text-xs font-mono">
-                    <span class="text-gray-400">RATION CONSUMPTION:</span>
-                    <span id="food-burn-rate" class="text-lcars-yellow font-bold ml-1">400 UNITS / CYCLE</span>
-                </div>
-                <div class="text-xs font-mono">
-                    <span class="text-gray-400">FOOD AUTONOMY:</span>
-                    <span id="food-cycles-remaining" class="text-lcars-cyan font-bold ml-1">1.1 CYCLES REMAINING</span>
-                </div>
-            </div>
+            <div class="flex-grow flex gap-3 overflow-hidden">
+                <!-- Sidebar Nav -->
+                <div class="w-48 flex flex-col gap-2 shrink-0">
+                    <div class="bg-[var(--lcars-peach)] text-black font-bold p-1.5 text-center rounded-l-full rounded-r-md text-base">DECK NAV</div>
+                    <button onclick="openModal('bridgeModal')" class="lcars-btn bg-lcars-blue text-black font-bold text-xs py-1.5 px-3 text-left">01 MAIN BRIDGE</button>
+                    <button onclick="openModal('scienceModal')" class="lcars-btn bg-lcars-gold text-black font-bold text-xs py-1.5 px-3 text-left">04 SCIENCE LABS</button>
+                    <button onclick="openModal('torpedoModal')" class="lcars-btn bg-lcars-red text-white font-bold text-xs py-1.5 px-3 text-left">06 TORPEDO BAYS</button>
+                    <button onclick="openModal('shuttleModal')" class="lcars-btn bg-lcars-lavender text-black font-bold text-xs py-1.5 px-3 text-left">10 MAIN SHUTTLEBAY</button>
+                    <button onclick="openModal('engineeringModal')" class="lcars-btn bg-lcars-peach text-black font-bold text-xs py-1.5 px-3 text-left">12 MAIN ENGINEERING</button>
 
-            <!-- Cycle Advance Action Group -->
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-400 font-bold">ADVANCE CYCLES:</span>
-                <button onclick="advanceCycle(1)" class="lcars-pill bg-lcars-cyan text-black px-3 py-1.5 font-bold text-xs hover:brightness-125">
-                    +1 CYCLE
-                </button>
-                <button onclick="advanceCycle(2)" class="lcars-pill bg-lcars-lavender text-black px-3 py-1.5 font-bold text-xs hover:brightness-125">
-                    +2 CYCLES
-                </button>
-                <button onclick="advanceCycle(3)" class="lcars-pill bg-lcars-purple text-black px-3 py-1.5 font-bold text-xs hover:brightness-125">
-                    +3 CYCLES
-                </button>
-            </div>
-        </section>
+                    <!-- Phase Cycle Controls -->
+                    <div class="bg-[var(--lcars-tangerine)] p-2 rounded-xl text-black flex flex-col gap-1 mt-1 border-2 border-amber-400">
+                        <div class="font-bold text-center text-[11px]">PHASE CYCLE CONTROL</div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-[10px] font-bold">CYCLES:</span>
+                            <input type="number" id="phaseCycleInput" value="1" min="1" max="100" class="w-full bg-black text-amber-400 font-mono text-center text-xs font-bold rounded py-0.5 border border-black focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-4 gap-1">
+                            <button onclick="quickSetCycles(1)" class="bg-black/20 text-black font-bold text-[10px] py-0.5 rounded">+1</button>
+                            <button onclick="quickSetCycles(5)" class="bg-black/20 text-black font-bold text-[10px] py-0.5 rounded">+5</button>
+                            <button onclick="quickSetCycles(10)" class="bg-black/20 text-black font-bold text-[10px] py-0.5 rounded">+10</button>
+                            <button onclick="quickSetCycles(25)" class="bg-black/20 text-black font-bold text-[10px] py-0.5 rounded">+25</button>
+                        </div>
+                        <button onclick="executePhaseCycles()" class="lcars-btn bg-lcars-gold text-black py-1 text-xs font-black">EXECUTE CYCLES</button>
+                    </div>
 
-        <!-- MAIN LAYOUT GRID -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-
-            <!-- LEFT COLUMN: SIDEBAR CONTROLS & STACK -->
-            <div class="lg:col-span-3 flex flex-col gap-3">
-                <div id="system-status-box" class="bg-lcars-deeporange text-black p-3 rounded-tr-2xl rounded-bl-2xl font-bold transition-colors duration-300">
-                    <div class="text-xs text-black/70">SYSTEM STATUS</div>
-                    <div class="text-xl" id="system-status-text">OPERATIONAL</div>
-                </div>
-
-                <!-- Akira Class Tactical Specifications Panel -->
-                <div class="bg-neutral-950 border-l-4 border-lcars-purple lcars-border-accent p-3 rounded-r-lg">
-                    <h3 class="text-lcars-purple lcars-accent-text font-bold text-sm mb-2">AKIRA-CLASS TACTICAL</h3>
-                    <div class="space-y-2 text-xs font-mono">
-                        <div class="flex justify-between border-b border-neutral-800 pb-1">
-                            <span class="text-gray-400">REGISTRY:</span>
-                            <span class="text-lcars-yellow lcars-accent-text">NCC-73515</span>
-                        </div>
-                        <div class="flex justify-between border-b border-neutral-800 pb-1">
-                            <span class="text-gray-400">TORPEDO LAUNCHERS:</span>
-                            <span class="text-lcars-cyan">15 POD ARRAYS</span>
-                        </div>
-                        <div class="flex justify-between border-b border-neutral-800 pb-1">
-                            <span class="text-gray-400">SHIELD ARRAYS:</span>
-                            <span class="text-lcars-orange lcars-accent-text" id="stat-shields">100% NOMINAL</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">CREW COMPLEMENT:</span>
-                            <span class="text-lcars-lavender" id="stat-sidebar-crew">400 / 500</span>
-                        </div>
+                    <!-- Live Shared Resources Sidebar Box -->
+                    <div class="mt-auto bg-[var(--lcars-purple)] p-2 rounded-t-xl flex flex-col gap-1 text-black text-xs">
+                        <div class="font-bold border-b border-black pb-0.5">VESSEL CONDITION</div>
+                        <div class="flex justify-between"><span>HULL:</span><span id="overview-hull">84%</span></div>
+                        <div class="flex justify-between"><span>R-MATS:</span><span id="overview-rmats">500</span></div>
+                        <div class="flex justify-between"><span>TORPEDOES:</span><span id="overview-torps">188</span></div>
                     </div>
                 </div>
 
-                <!-- Quick Tactical Actions -->
-                <div class="flex flex-col gap-2">
-                    <button onclick="triggerComputerChirp(); logAction('Tactical Sensors Scanned Sector')" class="lcars-pill bg-lcars-yellow text-black font-bold p-2 text-left px-4 hover:bg-yellow-300">
-                        ▶ LONG RANGE SENSORS
-                    </button>
-                    <button onclick="triggerComputerChirp(); logAction('Armed Torpedo Launch Pod Arrays')" class="lcars-pill bg-lcars-cyan text-black font-bold p-2 text-left px-4 hover:bg-cyan-300">
-                        ▶ ARM TORPEDO PODS
-                    </button>
-                    <button onclick="triggerComputerChirp(); logAction('Sub-Space Telemetry Probe Launched')" class="lcars-pill bg-lcars-lavender text-black font-bold p-2 text-left px-4 hover:bg-indigo-300">
-                        ▶ LAUNCH SUBSPACE PROBE
-                    </button>
-                </div>
+                <!-- Main SVG Cross-Section Map -->
+                <div class="flex-grow bg-black lcars-panel-border p-2 flex flex-col relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-1 border-b border-[var(--lcars-orange)] pb-1">
+                        <span class="text-[var(--lcars-orange)] font-bold text-base">CROSS-SECTION DECK ALLOCATION MAP</span>
+                        <div class="flex gap-2">
+                            <button onclick="fabricateTorpedoes(5)" class="lcars-btn bg-lcars-gold text-black py-0.5 px-3 text-xs font-bold">+5 TORPEDOES (-50 R-MAT)</button>
+                        </div>
+                    </div>
 
-                <!-- Emergency System Reset -->
-                <div class="mt-auto pt-4">
-                    <button onclick="confirmReset()" class="w-full lcars-pill bg-red-950 text-lcars-red border border-lcars-red font-bold p-2 text-xs hover:bg-lcars-red hover:text-black transition">
-                        ⚠ EMERGENCY SYSTEM WIPE
-                    </button>
+                    <div class="flex-grow relative flex items-center justify-center overflow-auto p-1" id="svg-schematic-container">
+                        <svg id="akira-schematic" viewBox="0 0 1000 500" class="w-full h-full select-none">
+                            <pattern id="lcars-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#112233" stroke-width="0.5"/>
+                            </pattern>
+                            <rect width="1000" height="500" fill="url(#lcars-grid)" />
+
+                            <!-- Akira Class Hull Wireframe -->
+                            <g stroke="#ff9900" stroke-width="1.5" fill="none" opacity="0.4">
+                                <path d="M 250 150 C 400 120, 650 120, 750 170 C 820 200, 850 250, 750 300 C 650 350, 400 350, 250 320 Z"/>
+                                <path d="M 400 135 L 450 70 L 650 70 L 700 135 Z"/>
+                                <path d="M 100 80 L 350 130 L 320 160 L 80 110 Z"/>
+                                <path d="M 100 390 L 350 340 L 320 310 L 80 360 Z"/>
+                            </g>
+
+                            <!-- Interactive Rooms Group -->
+                            <g id="rooms-group"></g>
+
+                            <!-- Deck Annotations -->
+                            <g font-size="10" fill="#ffcc00" font-family="Antonio">
+                                <text x="860" y="85">DECK 01 - CATAMARAN / BRIDGE</text>
+                                <text x="860" y="125">DECK 03 - TAC COMMAND</text>
+                                <text x="860" y="165">DECK 05 - SCIENCE & SICKBAY</text>
+                                <text x="860" y="205">DECK 07 - ARMORY & WEAPONS</text>
+                                <text x="860" y="245">DECK 09 - CREW HABITATION</text>
+                                <text x="860" y="285">DECK 11 - SHUTTLEBAYS</text>
+                                <text x="860" y="325">DECK 13 - MAIN ENGINEERING</text>
+                                <text x="860" y="365">DECK 15 - CARGO BAYS</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="h-10 bg-black border-t border-[var(--lcars-orange)] flex items-center justify-between px-3">
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-[var(--lcars-peach)] font-bold">SELECTED ROOM:</span>
+                            <span id="selected-room-name" class="text-white text-sm font-mono">Hover or Click a Room</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- CENTER/RIGHT CONTENT AREA -->
-            <div class="lg:col-span-9 flex flex-col gap-4">
 
-                <!-- SECTION 1: LIVE HULL INTEGRITY TRACKER & AKIRA CLASS SCHEMATIC -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4 relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-2 border-b border-lcars-orange/30 pb-2">
+        <!-- ===================================================================
+             VIEW 3: OPERATIONS DASHBOARD
+             =================================================================== -->
+        <div id="view-operations" class="w-full h-full hidden flex-col justify-between overflow-y-auto pr-1">
+            <header class="flex items-stretch gap-2 mb-2 shrink-0">
+                <div onclick="switchView('main')" class="cursor-pointer flex items-center gap-2">
+                    <div class="bg-lcars-orange w-20 h-14 rounded-tl-2xl rounded-bl-lg flex flex-col justify-end p-2 text-black font-bold text-xs leading-none">
+                        <span>LCARS</span>
+                        <span class="text-lg">4792</span>
+                    </div>
+                    <div class="bg-lcars-purple h-14 px-4 rounded-r-full flex flex-col justify-center text-black">
+                        <h1 class="text-xl font-bold tracking-wider leading-none">U.S.S. NAUTILUS</h1>
+                        <p class="text-[10px] font-semibold tracking-widest opacity-90">OPERATIONS • CYCLE <span id="ops-cycle-header">1</span></p>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex items-center justify-end gap-2 bg-black border-y-2 border-lcars-orange px-2 py-1">
+                    <button onclick="executePhaseCycles(1)" class="lcars-pill px-3 py-1 text-xs font-bold bg-lcars-gold text-black">+1 CYCLE</button>
+                    <button onclick="switchView('main')" class="lcars-pill px-3 py-1 text-xs font-bold bg-lcars-lavender text-black">◀ MAIN MENU</button>
+                    <button onclick="toggleAudioMute()" id="btn-audio-mute" class="lcars-pill px-2.5 py-1 text-xs font-bold bg-lcars-lavender text-black">🔊 AUDIO: ON</button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-12 gap-3 flex-1 overflow-y-auto">
+                <div class="col-span-4 flex flex-col gap-2">
+                    <div class="bg-lcars-deeporange text-black p-3 rounded-tr-xl rounded-bl-xl font-bold text-xs space-y-1">
+                        <div>RESOURCE MANIFEST</div>
+                        <div class="flex justify-between text-sm"><span>REPLICATOR MATS:</span><span id="ops-rmats-val" class="font-mono">500</span></div>
+                        <div class="flex justify-between text-sm"><span>PHOTON TORPEDOES:</span><span id="ops-photons-val" class="font-mono">100</span></div>
+                        <div class="flex justify-between text-sm"><span>QUANTUM TORPEDOES:</span><span id="ops-quantums-val" class="font-mono">88</span></div>
+                    </div>
+
+                    <div class="bg-neutral-950 border-l-4 border-lcars-purple p-3 rounded-r-lg font-mono text-xs space-y-2">
+                        <div class="text-lcars-purple font-bold font-sans">TORPEDO FABRICATION</div>
+                        <p class="text-[10px] text-gray-400">COST: 10 R-MATS PER TORPEDO (BATCH OF 5 = 50 R-MATS)</p>
+                        <button onclick="fabricateTorpedoes(5)" class="w-full lcars-btn bg-lcars-gold text-black py-2 font-bold text-xs">
+                            FABRICATE +5 BATCH (-50 R-MAT)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-span-8 flex flex-col gap-3">
+                    <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-3">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-base font-bold text-lcars-orange">HULL INTEGRITY MONITOR</span>
+                            <span id="ops-hull-val" class="text-2xl font-mono font-bold text-lcars-cyan">84%</span>
+                        </div>
+                        <div class="w-full bg-neutral-900 h-4 rounded-full overflow-hidden p-0.5 border border-neutral-700">
+                            <div id="ops-hull-bar" class="h-full bg-lcars-cyan rounded-full transition-all duration-300" style="width: 84%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===================================================================
+             VIEW 4: CAPTAIN'S PADD (CAPT. ADAM WINFIELD)
+             =================================================================== -->
+        <div id="view-padd" class="w-full h-full hidden flex-col justify-between overflow-y-auto pr-1">
+            <header class="grid grid-cols-12 gap-2 items-stretch mb-2 shrink-0">
+                <div class="col-span-3 flex items-center gap-2 cursor-pointer" onclick="switchView('main')">
+                    <div class="w-10 h-12 bg-amber-500 rounded-l-full flex-shrink-0"></div>
+                    <div class="flex-grow">
+                        <div class="text-[10px] text-purple-300 tracking-widest">SYS-RECORDS // 47421.3</div>
+                        <h1 class="text-xl font-bold text-amber-500 tracking-wider leading-none">LCARS-47</h1>
+                        <div class="text-[10px] text-sky-400 font-semibold">U.S.S. NAUTILUS</div>
+                    </div>
+                </div>
+
+                <div class="col-span-9 flex flex-col justify-between">
+                    <div class="h-5 bg-amber-500 rounded-r-full flex items-center justify-between px-3 text-black font-bold text-[10px]">
+                        <span>CAPTAIN'S LOG TERMINAL // PERSONNEL DOSSIER</span>
                         <div class="flex items-center gap-2">
-                            <div class="w-3 h-6 bg-lcars-orange lcars-header-block"></div>
-                            <h2 class="text-xl font-bold text-lcars-orange lcars-accent-text tracking-wider">HULL INTEGRITY MONITOR</h2>
+                            <span id="header-rank-badge">RANK: COMMANDER</span>
+                            <button onclick="switchView('main')" class="bg-black text-amber-500 px-2 py-0.5 rounded-full text-[10px] font-bold">◀ MAIN MENU</button>
                         </div>
-                        <span id="hull-percentage-text" class="text-3xl font-mono font-bold text-lcars-cyan">100%</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1 mt-1 justify-end">
+                        <button onclick="toggleAudio()" id="audio-toggle-btn" class="lcars-btn bg-sky-400 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
+                            <i class="fas fa-volume-up"></i> AUDIO: ON
+                        </button>
+                        <button onclick="toggleRedAlert()" id="red-alert-btn" class="lcars-btn bg-red-600 text-white text-[10px] px-2 py-0.5 font-bold rounded-full">
+                            <i class="fas fa-exclamation-triangle"></i> RED ALERT
+                        </button>
+                        <button onclick="exportData()" class="lcars-btn bg-purple-400 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
+                            <i class="fas fa-download"></i> EXPORT
+                        </button>
+                        <button onclick="resetCharacterData()" class="lcars-btn bg-red-500 text-black text-[10px] px-2 py-0.5 font-bold rounded-full">
+                            <i class="fas fa-undo"></i> RESET
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-12 gap-3 flex-1 overflow-y-auto">
+                <div class="col-span-3 flex flex-col gap-2">
+                    <div class="bg-purple-400 text-black p-2 rounded-tl-2xl flex flex-col justify-between h-16">
+                        <span class="text-[10px] font-bold">REGISTRY ID</span>
+                        <span class="text-base font-bold tracking-widest text-right">001-WINFIELD</span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                        <!-- Dynamic Ship Visual Canvas Schematic: AKIRA CLASS VECTOR -->
-                        <div class="md:col-span-5 flex flex-col items-center justify-center p-2 bg-black/80 rounded-lg border border-neutral-900 relative">
-                            <div class="text-[10px] text-gray-500 absolute top-1 left-2 font-mono">SCHEMATIC: AKIRA-CLASS HEAVY CRUISER</div>
-                            
-                            <!-- Authentic Akira-Class Top-Down Visual SVG -->
-                            <svg id="ship-schematic" viewBox="0 0 320 160" class="w-full h-auto max-h-40 my-2 transition-all duration-300">
-                                <g id="ship-body" stroke="#66CCCC" stroke-width="1.8" fill="none" class="transition-colors duration-500">
-                                    <path d="M 160 20 C 210 20, 260 40, 275 80 C 260 120, 210 140, 160 140 C 110 140, 60 120, 45 80 C 60 40, 110 20, 160 20 Z" fill="#081828"/>
-                                    <path d="M 120 60 C 140 45, 180 45, 200 60 L 190 100 C 170 115, 130 115, 110 100 Z" fill="#000000" stroke="#FF9900" stroke-width="1.2"/>
-                                    <path d="M 80 35 L 220 35 L 205 22 L 95 22 Z" fill="#0B253A" stroke="#9999FF"/>
-                                    <path d="M 80 125 L 220 125 L 205 138 L 95 138 Z" fill="#0B253A" stroke="#9999FF"/>
-                                    <rect x="210" y="55" width="25" height="50" rx="4" fill="#003366" stroke="#FF9900"/>
-                                    <rect x="20" y="30" width="75" height="12" rx="4" fill="#002244" stroke="#66CCCC"/>
-                                    <rect x="20" y="118" width="75" height="12" rx="4" fill="#002244" stroke="#66CCCC"/>
-                                    <line x1="85" y1="38" x2="110" y2="55" stroke="#66CCCC" stroke-width="2"/>
-                                    <line x1="85" y1="122" x2="110" y2="105" stroke="#66CCCC" stroke-width="2"/>
-                                    <path d="M 265 70 L 285 80 L 265 90 Z" fill="#FF9900" id="schematic-deflector"/>
-                                    <circle cx="160" cy="80" r="12" fill="#001122" stroke="#66CCCC"/>
-                                </g>
-                            </svg>
+                    <div class="flex flex-col gap-1.5 my-1">
+                        <button onclick="switchPaddTab('dossier')" id="tab-btn-dossier" class="nav-tab lcars-btn bg-amber-500 text-black py-2 px-3 text-xs text-right font-bold tracking-wider">1. DOSSIER & STATS</button>
+                        <button onclick="switchPaddTab('inventory')" id="tab-btn-inventory" class="nav-tab lcars-btn bg-purple-400 text-black py-2 px-3 text-xs text-right font-bold tracking-wider">2. INVENTORY & GEAR</button>
+                        <button onclick="switchPaddTab('roller')" id="tab-btn-roller" class="nav-tab lcars-btn bg-sky-400 text-black py-2 px-3 text-xs text-right font-bold tracking-wider">3. TACTICAL ROLLER</button>
+                        <button onclick="switchPaddTab('logs')" id="tab-btn-logs" class="nav-tab lcars-btn bg-amber-400 text-black py-2 px-3 text-xs text-right font-bold tracking-wider">4. CAPTAIN'S LOG</button>
+                    </div>
 
-                            <div id="hull-status-badge" class="px-3 py-0.5 rounded-full text-xs font-bold bg-lcars-cyan text-black">
-                                INTEGRITY OPTIMAL
-                            </div>
-                        </div>
-
-                        <!-- Hull Controls -->
-                        <div class="md:col-span-7 flex flex-col gap-3">
-                            <div class="w-full bg-neutral-900 h-6 rounded-full overflow-hidden p-1 border border-neutral-700">
-                                <div id="hull-bar" class="h-full bg-lcars-cyan rounded-full transition-all duration-300 w-full"></div>
-                            </div>
-
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs text-gray-400">SET INTEGRITY:</span>
-                                <input type="range" id="hull-range" min="0" max="100" value="100" class="flex-1" oninput="updateHull(this.value)">
-                                <input type="number" id="hull-number" min="0" max="100" value="100" onchange="updateHull(this.value)" class="w-16 bg-black border border-lcars-orange text-lcars-yellow text-center font-mono font-bold rounded p-1 text-sm">
-                            </div>
-
-                            <div class="flex flex-wrap gap-1.5 justify-between">
-                                <div class="flex gap-1">
-                                    <button onclick="adjustHull(-10)" class="lcars-pill bg-lcars-red text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">-10%</button>
-                                    <button onclick="adjustHull(-5)" class="lcars-pill bg-lcars-deeporange text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">-5%</button>
-                                    <button onclick="adjustHull(-1)" class="lcars-pill bg-lcars-orange text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">-1%</button>
-                                </div>
-                                <div class="flex gap-1">
-                                    <button onclick="adjustHull(1)" class="lcars-pill bg-lcars-cyan text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">+1%</button>
-                                    <button onclick="adjustHull(5)" class="lcars-pill bg-lcars-lavender text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">+5%</button>
-                                    <button onclick="adjustHull(10)" class="lcars-pill bg-lcars-purple text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">+10%</button>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="bg-gray-900 border border-amber-500 p-2 rounded-xl mt-auto text-[10px] space-y-1">
+                        <div class="text-amber-400 font-bold border-b border-amber-500 pb-0.5">TACTICAL SUMMARY</div>
+                        <div class="flex justify-between"><span>NAME:</span> <span id="quick-name" class="text-white"></span></div>
+                        <div class="flex justify-between"><span>RANK:</span> <span id="quick-rank" class="text-white"></span></div>
+                        <div class="flex justify-between"><span>HEALTH:</span> <span id="quick-hp" class="text-sky-300 font-bold"></span></div>
                     </div>
                 </div>
 
-                <!-- SECTION 2: CREW COMPLEMENT & ORDNANCE LAUNCHERS -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Crew Tracker -->
-                    <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-2 border-b border-lcars-lavender/30 pb-2">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-3 h-6 bg-lcars-lavender lcars-header-block"></div>
-                                    <h2 class="text-lg font-bold text-lcars-lavender lcars-accent-text tracking-wider">CREW COMPLEMENT</h2>
-                                </div>
-                                <span id="crew-count-display" class="text-xl font-mono font-bold text-lcars-lavender">400 / 500</span>
-                            </div>
-
-                            <div class="w-full bg-neutral-900 h-4 rounded-full overflow-hidden p-0.5 border border-neutral-800 mb-3">
-                                <div id="crew-bar" class="h-full bg-lcars-lavender rounded-full transition-all duration-300" style="width: 80%"></div>
-                            </div>
-
-                            <div class="flex justify-between text-xs font-mono mb-3">
-                                <span>STATUS: <span id="crew-status-text" class="text-lcars-cyan font-bold">OPTIMAL MANNING</span></span>
-                                <span class="text-gray-400">MAX CAP: 500</span>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-6 gap-1">
-                            <button onclick="adjustCrew(-10)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-xs py-1">-10</button>
-                            <button onclick="adjustCrew(-5)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-xs py-1">-5</button>
-                            <button onclick="adjustCrew(-1)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-xs py-1">-1</button>
-                            <button onclick="adjustCrew(1)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-xs py-1">+1</button>
-                            <button onclick="adjustCrew(5)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-xs py-1">+5</button>
-                            <button onclick="adjustCrew(10)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-xs py-1">+10</button>
-                        </div>
-                    </div>
-
-                    <!-- Torpedo Ordnance Launcher -->
-                    <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-2 border-b border-lcars-cyan/30 pb-2">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-3 h-6 bg-lcars-cyan lcars-header-block"></div>
-                                    <h2 class="text-lg font-bold text-lcars-cyan tracking-wider">TACTICAL TORPEDO PODS</h2>
-                                </div>
-                                <span id="torpedo-total-display" class="text-xl font-mono font-bold text-lcars-cyan">375 / 375</span>
-                            </div>
-
-                            <!-- Photon Torpedoes -->
-                            <div class="mb-3">
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span class="text-lcars-red font-bold">PHOTON TORPEDOES (200 MAX)</span>
-                                    <span id="photon-count-text" class="text-lcars-yellow font-bold">200 / 200</span>
-                                </div>
-                                <div class="w-full bg-neutral-900 h-3 rounded-full overflow-hidden p-0.5 border border-neutral-800 flex items-center">
-                                    <div id="photon-bar" class="h-full bg-lcars-red rounded-full transition-all duration-300" style="width: 100%"></div>
-                                </div>
-                                <div class="flex justify-between items-center mt-1">
-                                    <div class="flex gap-1">
-                                        <button onclick="fireTorpedo('photon', 1)" class="lcars-pill bg-lcars-red text-black text-xs font-bold px-2 py-0.5 hover:brightness-125">FIRE 1</button>
-                                        <button onclick="fireTorpedo('photon', 5)" class="lcars-pill bg-neutral-800 border border-lcars-red text-lcars-red text-xs font-bold px-2 py-0.5 hover:bg-lcars-red hover:text-black">FIRE 5</button>
-                                    </div>
-                                    <button onclick="adjustTorpedo('photon', 10)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 text-xs px-2 py-0.5 hover:bg-neutral-800">+10 REFILL</button>
-                                </div>
-                            </div>
-
-                            <!-- Quantum Torpedoes -->
+                <div class="col-span-9 bg-gray-950 border-t-2 border-l-2 border-amber-500 rounded-tr-2xl p-3 flex flex-col justify-between overflow-y-auto">
+                    
+                    <!-- DOSSIER TAB -->
+                    <div id="view-dossier" class="tab-view space-y-3">
+                        <div class="flex justify-between items-center bg-gray-900 p-3 border-l-4 border-purple-400 rounded-r-lg">
                             <div>
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span class="text-lcars-cyan font-bold">QUANTUM TORPEDOES (175 MAX)</span>
-                                    <span id="quantum-count-text" class="text-lcars-cyan font-bold">175 / 175</span>
-                                </div>
-                                <div class="w-full bg-neutral-900 h-3 rounded-full overflow-hidden p-0.5 border border-neutral-800 flex items-center">
-                                    <div id="quantum-bar" class="h-full bg-lcars-cyan rounded-full transition-all duration-300" style="width: 100%"></div>
-                                </div>
-                                <div class="flex justify-between items-center mt-1">
-                                    <div class="flex gap-1">
-                                        <button onclick="fireTorpedo('quantum', 1)" class="lcars-pill bg-lcars-cyan text-black text-xs font-bold px-2 py-0.5 hover:brightness-125">FIRE 1</button>
-                                        <button onclick="fireTorpedo('quantum', 5)" class="lcars-pill bg-neutral-800 border border-lcars-cyan text-lcars-cyan text-xs font-bold px-2 py-0.5 hover:bg-lcars-cyan hover:text-black">FIRE 5</button>
-                                    </div>
-                                    <button onclick="adjustTorpedo('quantum', 10)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 text-xs px-2 py-0.5 hover:bg-neutral-800">+10 REFILL</button>
-                                </div>
+                                <h2 id="char-name" class="text-xl font-bold text-amber-400">ADAM WINFIELD</h2>
+                                <p class="text-sky-300 text-xs"><span id="char-rank">COMMANDER</span> | <span id="char-assignment">COMMANDING OFFICER</span></p>
+                            </div>
+                            <div class="text-right text-[10px] text-gray-400">
+                                <div>SPECIES: <span id="char-species" class="text-amber-400 font-bold">HUMAN</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Vitals -->
+                        <div class="bg-gray-900 p-3 rounded-lg border border-sky-500/30 space-y-2">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-300">STRESS / HP</span>
+                                <span id="hp-text-display" class="text-amber-400">12 / 12 HP</span>
+                            </div>
+                            <div class="w-full bg-gray-800 h-4 rounded-full overflow-hidden p-0.5 border border-gray-700">
+                                <div id="hp-bar-fill" class="h-full bg-sky-400 rounded-full" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Attributes & Disciplines Grid -->
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="bg-gray-900 p-3 rounded-lg border border-amber-500/30">
+                                <h3 class="font-bold text-amber-400 border-b border-amber-500/50 pb-1 mb-2">ATTRIBUTES</h3>
+                                <div id="attributes-container" class="space-y-1"></div>
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-lg border border-purple-500/30">
+                                <h3 class="font-bold text-purple-300 border-b border-purple-500/50 pb-1 mb-2">DISCIPLINES</h3>
+                                <div id="disciplines-container" class="space-y-1"></div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- SECTION 3: ENGINEERING FABRICATION & HULL REPAIR BAY -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-                    <div class="flex justify-between items-center mb-3 border-b border-lcars-cyan/30 pb-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-6 bg-lcars-cyan lcars-header-block"></div>
-                            <h2 class="text-xl font-bold text-lcars-cyan tracking-wider">ENGINEERING FABRICATION & REPAIR BAY</h2>
+                    <!-- INVENTORY TAB -->
+                    <div id="view-inventory" class="tab-view hidden space-y-3">
+                        <div class="flex justify-between items-center bg-gray-900 p-2 rounded border border-gray-800">
+                            <h2 class="text-base font-bold text-amber-400">EQUIPMENT & INVENTORY</h2>
+                            <button onclick="openAddItemModal()" class="lcars-btn bg-amber-400 text-black px-3 py-1 font-bold rounded text-xs">+ ADD ITEM</button>
                         </div>
-                        <div class="text-xs text-gray-400 font-mono">CYCLE QUEUE MECHANIC</div>
+                        <div id="inventory-grid" class="grid grid-cols-2 gap-3 text-xs"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Fabrication & Repair Buttons -->
-                        <div class="space-y-2">
-                            <!-- Craft Photon -->
-                            <div class="bg-black p-2.5 rounded-lg border border-neutral-800 flex justify-between items-center">
+                    <!-- ROLLER TAB -->
+                    <div id="view-roller" class="tab-view hidden space-y-3">
+                        <div class="bg-gray-900 p-3 rounded-lg border border-sky-500/30 space-y-3 text-xs">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <div class="text-xs font-bold text-lcars-red">BUILD 5 PHOTON TORPEDOES</div>
-                                    <div class="text-[10px] text-gray-400 font-mono">REQ: 5 Tritanium | 1 Dilithium | 25 Deuterium</div>
-                                    <div class="text-[10px] text-lcars-yellow font-mono">DURATION: 1 CYCLE</div>
+                                    <label class="text-sky-300 block mb-1">ATTRIBUTE</label>
+                                    <select id="roll-attr-select" class="w-full bg-black border border-sky-400 text-amber-400 p-1 rounded uppercase"></select>
                                 </div>
-                                <button onclick="queueCraftingOrder('photon')" class="lcars-pill bg-lcars-red text-black font-bold text-xs px-3 py-1.5 hover:brightness-125">
-                                    QUEUE
-                                </button>
-                            </div>
-
-                            <!-- Craft Quantum -->
-                            <div class="bg-black p-2.5 rounded-lg border border-neutral-800 flex justify-between items-center">
                                 <div>
-                                    <div class="text-xs font-bold text-lcars-cyan">BUILD 5 QUANTUM TORPEDOES</div>
-                                    <div class="text-[10px] text-gray-400 font-mono">REQ: 10 Tritanium | 2 Dilithium | 50 Deuterium</div>
-                                    <div class="text-[10px] text-lcars-yellow font-mono">DURATION: 2 CYCLES</div>
+                                    <label class="text-purple-300 block mb-1">DISCIPLINE</label>
+                                    <select id="roll-disc-select" class="w-full bg-black border border-purple-400 text-amber-400 p-1 rounded uppercase"></select>
                                 </div>
-                                <button onclick="queueCraftingOrder('quantum')" class="lcars-pill bg-lcars-cyan text-black font-bold text-xs px-3 py-1.5 hover:brightness-125">
-                                    QUEUE
-                                </button>
                             </div>
-
-                            <!-- Hull Repair Queue Button -->
-                            <div class="bg-black p-2.5 rounded-lg border border-neutral-800 flex justify-between items-center">
-                                <div>
-                                    <div class="text-xs font-bold text-lcars-orange">REPAIR +20 HULL INTEGRITY</div>
-                                    <div class="text-[10px] text-gray-400 font-mono">REQ: 10 Tritanium | 20 Deuterium</div>
-                                    <div class="text-[10px] text-lcars-yellow font-mono">DURATION: 1 CYCLE</div>
-                                </div>
-                                <button onclick="queueHullRepair()" class="lcars-pill bg-lcars-orange text-black font-bold text-xs px-3 py-1.5 hover:brightness-125">
-                                    QUEUE REPAIR
-                                </button>
-                            </div>
+                            <button onclick="executeTaskRoll()" class="w-full lcars-btn bg-amber-500 text-black py-2 font-bold rounded">EXECUTE TASK CHECK</button>
                         </div>
-
-                        <!-- Active Engineering Queue List -->
-                        <div class="bg-black p-3 rounded-lg border border-neutral-900 flex flex-col justify-between">
-                            <div class="text-xs text-lcars-yellow font-bold mb-2 border-b border-neutral-800 pb-1 flex justify-between">
-                                <span>ACTIVE ENGINEERING QUEUE</span>
-                                <span id="queue-count-badge" class="text-gray-400 font-mono">0 JOBS QUEUED</span>
-                            </div>
-                            <div id="crafting-queue-list" class="space-y-1.5 h-36 overflow-y-auto text-xs font-mono pr-1">
-                                <div class="text-gray-600 italic text-[11px]">No active torpedo or hull repair jobs in progress.</div>
-                            </div>
-                        </div>
+                        <div id="roll-result-container" class="bg-black p-3 rounded border border-gray-800 text-center text-xs"></div>
                     </div>
+
+                    <!-- LOGS TAB -->
+                    <div id="view-logs" class="tab-view hidden space-y-3">
+                        <div class="flex gap-2 bg-gray-900 p-2 rounded border border-gray-800">
+                            <input type="text" id="manual-log-input" placeholder="ENTER CAPTAIN'S LOG..." class="flex-grow bg-black border border-purple-500/50 px-2 py-1 text-xs text-amber-300 rounded uppercase">
+                            <button onclick="addManualLogEntry()" class="lcars-btn bg-purple-400 text-black px-3 py-1 font-bold text-xs rounded">RECORD</button>
+                        </div>
+                        <div id="log-stream-container" class="bg-black p-3 rounded border border-gray-800 font-mono text-[11px] space-y-1 max-h-64 overflow-y-auto"></div>
+                    </div>
+
                 </div>
-
-                <!-- SECTION 4: PRIMARY SHIP RESOURCE STORES -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-                    <div class="flex justify-between items-center mb-3 border-b border-lcars-purple/30 pb-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-6 bg-lcars-purple lcars-header-block"></div>
-                            <h2 class="text-xl font-bold text-lcars-purple lcars-accent-text tracking-wider">PRIMARY RESOURCE STORES</h2>
-                        </div>
-                        <button onclick="openCapacitiesModal()" class="lcars-pill bg-lcars-lavender text-black text-xs font-bold px-3 py-1 hover:brightness-110">
-                            ⚙ EDIT CAPACITIES
-                        </button>
-                    </div>
-
-                    <!-- Early Warning Food Ration Alert Banner -->
-                    <div id="food-warning-alert" class="hidden mb-3 p-2 bg-red-950/80 border-2 border-lcars-red text-lcars-red rounded-lg font-mono text-xs flex items-center justify-between animate-pulse">
-                        <span class="flex items-center gap-2">
-                            <span>⚠ CRITICAL RATION WARNING:</span>
-                            <span>Food reserves fall below 2 cycles of total crew demand! Replenish immediately.</span>
-                        </span>
-                        <span class="font-bold text-white bg-lcars-red px-2 py-0.5 rounded">DEPLETION IMMINENT</span>
-                    </div>
-
-                    <!-- 4 Main Resources Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="resources-container">
-                        <!-- Deuterium, Tritanium, Dilithium, and Food cards injected dynamically by JS -->
-                    </div>
-                </div>
-
-                <!-- SECTION 5: CAPTAIN XP & LEVEL SYSTEM -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-                    <div class="flex justify-between items-center mb-3 border-b border-lcars-yellow/30 pb-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-6 bg-lcars-yellow lcars-header-block"></div>
-                            <h2 class="text-xl font-bold text-lcars-yellow lcars-accent-text tracking-wider">CAPTAIN RANK & EXPERIENCE EVALUATION</h2>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-400">RANK CAP:</span>
-                            <span class="text-xl font-mono font-bold text-lcars-yellow lcars-accent-text ml-2">LEVEL 9 MAX</span>
-                        </div>
-                    </div>
-
-                    <!-- XP Tracker Header & Controls -->
-                    <div class="bg-black p-4 rounded-lg border border-neutral-800 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div class="min-w-[200px]">
-                            <div class="text-xs text-gray-400">COMMAND RANK LEVEL</div>
-                            <div id="captain-rank-display" class="text-3xl font-bold text-lcars-orange lcars-accent-text">CAPTAIN • LEVEL 3 / 9</div>
-                            <div class="text-xs text-gray-400 font-mono mt-1" id="xp-progress-subtext">2000 / 3000 XP TO LEVEL 4</div>
-                        </div>
-
-                        <!-- XP Bar -->
-                        <div class="flex-1 w-full">
-                            <div class="flex justify-between text-xs mb-1 font-mono">
-                                <span class="text-lcars-yellow lcars-accent-text">TOTAL XP ACCUMULATED: <span id="total-xp-display">2000</span></span>
-                                <span class="text-gray-400" id="xp-next-level-sub">NEXT RANK: 3000 XP</span>
-                            </div>
-                            <div class="w-full bg-neutral-900 h-5 rounded-full overflow-hidden p-0.5 border border-neutral-800">
-                                <div id="xp-bar" class="h-full bg-lcars-yellow rounded-full transition-all duration-300" style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Add / Reduce XP Quick Buttons -->
-                        <div class="flex flex-col gap-1.5 justify-end">
-                            <div class="flex gap-1">
-                                <button onclick="adjustXP(50)" class="lcars-pill bg-neutral-800 text-lcars-yellow border border-lcars-yellow px-2.5 py-1 text-xs font-bold hover:bg-lcars-yellow hover:text-black">+50 XP</button>
-                                <button onclick="adjustXP(100)" class="lcars-pill bg-neutral-800 text-lcars-yellow border border-lcars-yellow px-2.5 py-1 text-xs font-bold hover:bg-lcars-yellow hover:text-black">+100 XP</button>
-                                <button onclick="adjustXP(500)" class="lcars-pill bg-neutral-800 text-lcars-yellow border border-lcars-yellow px-2.5 py-1 text-xs font-bold hover:bg-lcars-yellow hover:text-black">+500 XP</button>
-                            </div>
-                            <div class="flex gap-1">
-                                <button onclick="adjustXP(-100)" class="lcars-pill bg-neutral-900 text-gray-400 border border-neutral-700 px-2 py-0.5 text-[10px] font-bold hover:bg-neutral-800">-100</button>
-                                <button onclick="adjustXP(1000)" class="flex-1 lcars-pill bg-lcars-yellow text-black px-2.5 py-1 text-xs font-bold hover:brightness-125">+1000 XP (LEVEL UP)</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 6: CREW MORALE METER -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-                    <div class="flex justify-between items-center mb-3 border-b border-lcars-orange/30 pb-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-6 bg-lcars-orange lcars-header-block"></div>
-                            <h2 class="text-xl font-bold text-lcars-orange lcars-accent-text tracking-wider">CREW MORALE MONITOR</h2>
-                        </div>
-                        <span id="morale-value-display" class="text-2xl font-mono font-bold text-lcars-orange">300 / 1000</span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                        <div class="md:col-span-8 flex flex-col gap-2">
-                            <div class="w-full bg-neutral-900 h-5 rounded-full overflow-hidden p-0.5 border border-neutral-800">
-                                <div id="morale-bar" class="h-full bg-lcars-red rounded-full transition-all duration-300" style="width: 30%"></div>
-                            </div>
-                            
-                            <div class="flex justify-between text-xs font-mono">
-                                <span>MORALE STATUS: <span id="morale-status-text" class="text-lcars-red font-bold">LOW MORALE - SHIFT DISSATISFACTION</span></span>
-                                <span class="text-gray-400">INDEX: 30%</span>
-                            </div>
-
-                            <div class="grid grid-cols-6 gap-1 mt-1">
-                                <button onclick="adjustMorale(-100)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-xs py-1">-100</button>
-                                <button onclick="adjustMorale(-50)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-xs py-1">-50</button>
-                                <button onclick="adjustMorale(-10)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-xs py-1">-10</button>
-                                <button onclick="adjustMorale(10)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-xs py-1">+10</button>
-                                <button onclick="adjustMorale(50)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-xs py-1">+50</button>
-                                <button onclick="adjustMorale(100)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-xs py-1">+100</button>
-                            </div>
-                        </div>
-
-                        <div class="md:col-span-4 flex flex-col gap-2">
-                            <button onclick="setMoralePreset(850)" class="lcars-pill bg-lcars-orange text-black font-bold p-2 text-xs hover:brightness-125">
-                                ★ SHORE LEAVE EVENT (+850)
-                            </button>
-                            <button onclick="setMoralePreset(1000)" class="lcars-pill bg-neutral-800 text-lcars-orange border border-lcars-orange font-bold p-2 text-xs hover:bg-lcars-orange hover:text-black">
-                                MAX MORALE (1000)
-                            </button>
-                            <button onclick="setMoralePreset(150)" class="lcars-pill bg-neutral-900 text-lcars-red border border-lcars-red font-bold p-1.5 text-xs hover:bg-lcars-red hover:text-black">
-                                ⚠ CRISIS / MUTINY RISK (150)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 7: CAPTAIN'S LOG & VOICE TRANSCRIBER -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-                    <div class="flex flex-wrap justify-between items-center mb-3 border-b border-lcars-cyan/30 pb-2 gap-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-6 bg-lcars-cyan lcars-header-block"></div>
-                            <h2 class="text-xl font-bold text-lcars-cyan tracking-wider">CAPTAIN'S LOG & SPEECH TRANSCRIBER</h2>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <!-- Voice Recording Toggle Button -->
-                            <button onclick="toggleVoiceRecording()" id="btn-voice-rec" class="lcars-pill bg-lcars-red text-black px-3 py-1 text-xs font-bold flex items-center gap-1.5 hover:brightness-110">
-                                <span id="rec-dot">🎙️</span> <span id="rec-status-text">RECORD VOICE LOG</span>
-                            </button>
-                            <button onclick="clearLogs()" class="text-xs text-gray-500 hover:text-lcars-red">CLEAR LOGS</button>
-                        </div>
-                    </div>
-
-                    <!-- Live Transcription Status Banner -->
-                    <div id="transcribe-status-banner" class="hidden mb-2 p-2 bg-neutral-900 border border-lcars-red text-lcars-red text-xs font-mono rounded flex items-center justify-between">
-                        <span class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                            TRANSCRIPT AUDIO ACTIVE: SPEAK INTO MICROPHONE...
-                        </span>
-                        <span id="speech-live-text" class="text-lcars-yellow italic">Listening...</span>
-                    </div>
-
-                    <!-- Add Log Form -->
-                    <form onsubmit="handleLogSubmit(event)" class="flex gap-2 mb-3">
-                        <input type="text" id="log-input" placeholder="ENTER CAPTAIN'S LOG RECORD OR USE VOICE TRANSCRIBER..." class="flex-1 bg-black border border-neutral-700 rounded px-3 py-1.5 text-sm text-lcars-cyan focus:outline-none focus:border-lcars-cyan font-mono">
-                        <button type="submit" class="lcars-pill bg-lcars-cyan text-black px-4 py-1.5 font-bold text-xs hover:brightness-110">
-                            RECORD ENTRY
-                        </button>
-                    </form>
-
-                    <!-- Log Output Stream -->
-                    <div id="log-container" class="h-44 overflow-y-auto bg-black p-3 rounded border border-neutral-900 font-mono text-xs space-y-1.5">
-                        <!-- Log entries dynamically added here -->
-                    </div>
-                </div>
-
             </div>
         </div>
 
-        <!-- FOOTER BAR -->
-        <footer class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-500 border-t border-neutral-800 pt-3">
-            <div>STARFLEET COMMAND • LCARS v2401.9 • USS NAUTILUS OPERATIONS</div>
-            <div class="flex gap-4">
-                <span>CLASS: AKIRA HEAVY CRUISER</span>
-                <span>SECURITY LEVEL: 10</span>
-                <span class="text-lcars-orange lcars-accent-text">READY FOR GITHUB PAGES</span>
-            </div>
-        </footer>
     </div>
 
-    <!-- MODAL: EDIT RESOURCE CAPACITIES -->
-    <div id="capacity-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-neutral-950 border-2 border-lcars-purple p-6 rounded-xl max-w-md w-full">
-            <h3 class="text-xl font-bold text-lcars-purple mb-4">RECONFIGURE MAX RESOURCE CAPACITIES</h3>
-            <div class="space-y-3 mb-6" id="capacity-modal-fields">
-                <!-- Dynamic input fields injected via JS -->
+    <!-- MODALS SECTION -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <!-- TORPEDO MODAL -->
+        <div id="torpedoModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-red)] rounded-xl p-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-red)] pb-2 mb-2">
+                <span class="text-lg font-bold text-[var(--lcars-red)]">TORPEDO LAUNCH & FABRICATION</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
             </div>
-            <div class="flex justify-end gap-2">
-                <button onclick="closeCapacitiesModal()" class="lcars-pill bg-neutral-800 text-gray-300 px-4 py-1.5 text-xs font-bold">CANCEL</button>
-                <button onclick="saveCapacitiesModal()" class="lcars-pill bg-lcars-purple text-black px-4 py-1.5 text-xs font-bold">SAVE CONFIGURATION</button>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between bg-neutral-900 p-2 rounded">
+                    <span>PHOTONS: <span id="modal-photons" class="font-bold text-amber-400">100</span></span>
+                    <span>QUANTUMS: <span id="modal-quantums" class="font-bold text-cyan-400">88</span></span>
+                    <span>R-MATS: <span id="modal-rmats" class="font-bold text-purple-300">500</span></span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="fireTorpedo('photon')" class="flex-1 lcars-btn bg-lcars-red text-white py-2 font-bold">FIRE PHOTON (-1)</button>
+                    <button onclick="fabricateTorpedoes(5)" class="flex-1 lcars-btn bg-lcars-gold text-black py-2 font-bold">FABRICATE +5 (-50 R-MAT)</button>
+                </div>
             </div>
+        </div>
+
+        <!-- BRIDGE MODAL -->
+        <div id="bridgeModal" class="modal-content hidden w-full max-w-3xl bg-black border-2 border-[var(--lcars-blue)] rounded-xl p-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-blue)] pb-2 mb-2">
+                <span class="text-lg font-bold text-[var(--lcars-blue)]">COMMAND BRIDGE</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+            </div>
+            <div class="relative h-64 bg-slate-950 rounded border border-slate-800 flex items-center justify-center text-xs text-sky-400 font-mono">
+                [MAIN VIEWSCREEN ONLINE]
+            </div>
+        </div>
+
+        <!-- SCIENCE MODAL -->
+        <div id="scienceModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-gold)] rounded-xl p-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-gold)] pb-2 mb-2">
+                <span class="text-lg font-bold text-[var(--lcars-gold)]">SCIENCE LABS</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+            </div>
+            <div class="text-xs text-slate-300 font-mono">SCIENCE LAB MATRIX ACTIVE. NO UNRESOLVED SENSOR ANOMALIES.</div>
+        </div>
+
+        <!-- ENGINEERING MODAL -->
+        <div id="engineeringModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-peach)] rounded-xl p-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-peach)] pb-2 mb-2">
+                <span class="text-lg font-bold text-[var(--lcars-peach)]">MAIN ENGINEERING</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+            </div>
+            <div class="text-xs text-slate-300 font-mono">WARP CORE PHASE MATRIX: 100% NOMINAL.</div>
+        </div>
+
+        <!-- SHUTTLEBAY MODAL -->
+        <div id="shuttleModal" class="modal-content hidden w-full max-w-2xl bg-black border-2 border-[var(--lcars-lavender)] rounded-xl p-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-lavender)] pb-2 mb-2">
+                <span class="text-lg font-bold text-[var(--lcars-lavender)]">PRIMARY SHUTTLEBAY</span>
+                <button onclick="closeModal()" class="lcars-btn bg-lcars-red text-white py-0.5 px-3 text-xs">X CLOSE</button>
+            </div>
+            <div class="text-xs text-slate-300 font-mono">3 TYPE-9 SHUTTLES PREPARED FOR DEPLOYMENT.</div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- UNIFIED JAVASCRIPT APPLICATION ENGINE -->
     <script>
-        /* ===================================================================
-           STATE MANAGEMENT & INITIALIZATION
-           =================================================================== */
-        const DEFAULT_STATE = {
-            currentCycle: 1,
-            alertCondition: 'normal',
-            klaxonSilenced: false,
-            hull: 100,
-            crew: { current: 400, max: 500 },
-            morale: { current: 300, max: 1000 },
-            torpedoes: {
-                photon: { name: 'Photon Torpedoes', current: 200, max: 200 },
-                quantum: { name: 'Quantum Torpedoes', current: 175, max: 175 }
-            },
-            craftingQueue: [], // Torpedo & Hull Repair queue items
-            xp: 2000, // Starts at Level 3 (2,000 XP)
+        function autoScaleLCARS() {
+            const wrapper = document.getElementById('viewport-wrapper');
+            const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+            wrapper.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', autoScaleLCARS);
+        window.addEventListener('load', autoScaleLCARS);
+
+        /* SINGLE UNIFIED MASTER SHIP & PADD STATE */
+        const shipState = {
+            cycle: 1,
+            hullIntegrity: 84,
             resources: {
-                deuterium: { name: 'DEUTERIUM', current: 800, max: 1000, unit: 'LITERS', color: '#66CCCC' },
-                tritanium: { name: 'TRITANIUM', current: 80, max: 100, unit: 'MT', color: '#FF9900' },
-                dilithium: { name: 'DILITHIUM', current: 30, max: 50, unit: 'CRYSTALS', color: '#CC99CC' },
-                food: { name: 'FOOD & RATIONS', current: 450, max: 500, unit: 'UNITS', color: '#9999FF' }
+                rmats: 500,
+                photons: 100,
+                quantums: 88
             },
-            logs: []
+            rooms: [
+                { id: 'room-bridge', name: 'Main Bridge', deck: 1, x: 500, y: 75, w: 90, h: 25, status: 'Normal', special: 'bridge' },
+                { id: 'room-sci-lab', name: 'Main Science Lab', deck: 4, x: 430, y: 130, w: 80, h: 25, status: 'Normal', special: 'science' },
+                { id: 'room-torp-fwd', name: 'Forward Torpedo Bay', deck: 6, x: 385, y: 165, w: 85, h: 25, status: 'Normal', special: 'torpedo' },
+                { id: 'room-shuttlebay-1', name: 'Primary Shuttlebay', deck: 10, x: 260, y: 245, w: 120, h: 30, status: 'Normal', special: 'shuttle' },
+                { id: 'room-engineering', name: 'Main Engineering', deck: 12, x: 320, y: 285, w: 110, h: 30, status: 'Normal', special: 'engineering' }
+            ]
         };
 
-        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        let audioMuted = false;
-        let warpHumActive = false;
-        let audioCtx = null;
-        let humOscillator = null;
-        let humGain = null;
+        const DEFAULT_CHARACTER = {
+            name: "ADAM WINFIELD", rank: "COMMANDER", species: "HUMAN", assignment: "COMMANDING OFFICER",
+            vitals: { maxHp: 12, currentHp: 12, momentum: 6, determination: 3 },
+            attributes: { Control: 11, Daring: 8, Fitness: 8, Insight: 10, Presence: 8, Reason: 11 },
+            disciplines: { Command: 3, Conn: 3, Security: 1, Engineering: 4, Science: 4, Medicine: 1 },
+            inventory: [
+                { id: "1", name: "STARFLEET COMBADGE", category: "Tech", qty: 1, desc: "Communicator and transponder.", equipped: true },
+                { id: "2", name: "PHASER TYPE II", category: "Weapons", qty: 1, desc: "Standard sidearm.", equipped: true }
+            ],
+            logs: ["[LOG] LCARS PADD Initialized."]
+        };
+        let character = JSON.parse(JSON.stringify(DEFAULT_CHARACTER));
 
-        let klaxonTimer = null;
-
-        // Speech Recognition Setup
-        let speechRecognizer = null;
-        let isRecordingVoice = false;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadState();
-            initSpeechRecognition();
-            renderAll();
-            if (state.logs.length === 0) {
-                logAction('USS Nautilus Akira-Class LCARS interface booted up successfully.');
-            }
-        });
-
-        function saveState() {
-            localStorage.setItem('lcars_nautilus_state', JSON.stringify(state));
-        }
-
-        function loadState() {
-            const saved = localStorage.getItem('lcars_nautilus_state');
-            if (saved) {
+        /* AUDIO ENGINE */
+        class LcarsAudioEngine {
+            constructor() { this.ctx = null; this.muted = false; }
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            playBeep(freq = 750, type = 'sine', duration = 0.08) {
+                if (this.muted) return;
+                this.init();
                 try {
-                    const parsed = JSON.parse(saved);
-                    state = { ...DEFAULT_STATE, ...parsed };
-                    state.crew = { ...DEFAULT_STATE.crew, ...(parsed.crew || {}) };
-                    state.morale = { ...DEFAULT_STATE.morale, ...(parsed.morale || {}) };
-                    state.torpedoes = { ...DEFAULT_STATE.torpedoes, ...(parsed.torpedoes || {}) };
-                    state.resources = { ...DEFAULT_STATE.resources, ...(parsed.resources || {}) };
-                    state.craftingQueue = parsed.craftingQueue || [];
-                } catch (e) {
-                    console.error("Failed to parse saved state", e);
-                }
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
             }
         }
-
-        function confirmReset() {
-            if (confirm("WARNING: Are you sure you wish to initiate an Emergency System Wipe? All resources, XP, morale, crew, cycles, and logs will be reset.")) {
-                stopRedAlertKlaxon();
-                localStorage.removeItem('lcars_nautilus_state');
-                state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-                saveState();
-                renderAll();
-                logAction('Emergency System Wipe performed. LCARS restored to default factory status.');
-            }
-        }
-
-        /* ===================================================================
-           CYCLE ADVANCE & FOOD CONSUMPTION ENGINE
-           =================================================================== */
-        function advanceCycle(cyclesCount = 1) {
-            const count = Math.max(1, Math.min(3, cyclesCount));
-            playAudioSound('chirp');
-
-            for (let i = 0; i < count; i++) {
-                state.currentCycle += 1;
-                
-                // 1. Food Consumption: 1 Food per Crew Member per Cycle
-                const foodNeeded = state.crew.current;
-                state.resources.food.current = Math.max(0, state.resources.food.current - foodNeeded);
-
-                if (state.resources.food.current === 0) {
-                    // Starvation penalty on morale
-                    state.morale.current = Math.max(0, state.morale.current - 75);
-                    logAction(`CYCLE ${state.currentCycle}: RATION DEPLETION! Zero food available for crew. Morale dropped severely (-75).`);
-                } else {
-                    logAction(`CYCLE ${state.currentCycle}: Crew consumed ${foodNeeded} food units.`);
-                }
-
-                // 2. Process Engineering & Repair Queue
-                processCraftingQueueForOneCycle();
-            }
-
-            saveState();
-            renderAll();
-        }
-
-        /* ===================================================================
-           TORPEDO & HULL REPAIR ENGINEERING QUEUE MECHANICS
-           =================================================================== */
-        function queueCraftingOrder(type) {
-            let reqTrit = (type === 'photon') ? 5 : 10;
-            let reqDil = (type === 'photon') ? 1 : 2;
-            let reqDeut = (type === 'photon') ? 25 : 50;
-            let cyclesNeeded = (type === 'photon') ? 1 : 2;
-            let name = (type === 'photon') ? "5x Photon Torpedoes" : "5x Quantum Torpedoes";
-
-            // Check resource availability
-            if (state.resources.tritanium.current < reqTrit || 
-                state.resources.dilithium.current < reqDil || 
-                state.resources.deuterium.current < reqDeut) {
-                playAudioSound('warn');
-                alert(`INSUFFICIENT RESOURCES to queue ${name}!\nRequired: ${reqTrit} Tritanium, ${reqDil} Dilithium, ${reqDeut} Deuterium.`);
-                return;
-            }
-
-            // Deduct resources upfront
-            state.resources.tritanium.current -= reqTrit;
-            state.resources.dilithium.current -= reqDil;
-            state.resources.deuterium.current -= reqDeut;
-
-            // Add to engineering queue
-            const order = {
-                id: Date.now() + Math.random(),
-                kind: 'torpedo',
-                type: type,
-                name: name,
-                remainingCycles: cyclesNeeded,
-                totalCycles: cyclesNeeded
-            };
-
-            state.craftingQueue.push(order);
-            saveState();
-            renderResources();
-            renderCraftingQueue();
-            playAudioSound('click');
-            logAction(`Queued assembly for ${name}. Deducted ${reqTrit} Trit, ${reqDil} Dil, ${reqDeut} Deut.`);
-        }
-
-        function queueHullRepair() {
-            if (state.hull >= 100) {
-                playAudioSound('warn');
-                alert("HULL REPAIR CANNOT BE INITIALIZED: Vessel hull is already at 100% nominal integrity.");
-                return;
-            }
-
-            const reqTrit = 10;
-            const reqDeut = 20;
-
-            if (state.resources.tritanium.current < reqTrit || state.resources.deuterium.current < reqDeut) {
-                playAudioSound('warn');
-                alert(`INSUFFICIENT RESOURCES FOR HULL REPAIR!\nRequired: ${reqTrit} Tritanium, ${reqDeut} Deuterium.`);
-                return;
-            }
-
-            // Deduct resources upfront
-            state.resources.tritanium.current -= reqTrit;
-            state.resources.deuterium.current -= reqDeut;
-
-            const order = {
-                id: Date.now() + Math.random(),
-                kind: 'repair',
-                name: "Structural Hull Repair (+20%)",
-                remainingCycles: 1,
-                totalCycles: 1
-            };
-
-            state.craftingQueue.push(order);
-            saveState();
-            renderResources();
-            renderCraftingQueue();
-            playAudioSound('click');
-            logAction(`Queued Hull Structural Repair (+20%). Deducted ${reqTrit} Tritanium, ${reqDeut} Deuterium.`);
-        }
-
-        function processCraftingQueueForOneCycle() {
-            if (state.craftingQueue.length === 0) return;
-
-            const remainingJobs = [];
-
-            state.craftingQueue.forEach(job => {
-                job.remainingCycles -= 1;
-                if (job.remainingCycles <= 0) {
-                    if (job.kind === 'torpedo') {
-                        // Torpedo crafting completed
-                        const torpObj = state.torpedoes[job.type];
-                        const added = Math.min(5, torpObj.max - torpObj.current);
-                        torpObj.current = Math.min(torpObj.max, torpObj.current + 5);
-                        logAction(`ENGINEERING COMPLETE: ${job.name} finished assembly (+${added} added to pod stores).`);
-                    } else if (job.kind === 'repair') {
-                        // Hull repair completed
-                        const repairAmount = 20;
-                        const prevHull = state.hull;
-                        state.hull = Math.min(100, state.hull + repairAmount);
-                        const actualHealed = state.hull - prevHull;
-                        logAction(`ENGINEERING COMPLETE: Structural Hull Repair finished (+${actualHealed}% restored). Hull at ${state.hull}%.`);
-                    }
-                    playAudioSound('upgrade');
-                } else {
-                    remainingJobs.push(job);
-                }
-            });
-
-            state.craftingQueue = remainingJobs;
-        }
-
-        function renderCraftingQueue() {
-            const listContainer = document.getElementById('crafting-queue-list');
-            const badge = document.getElementById('queue-count-badge');
-            
-            badge.innerText = `${state.craftingQueue.length} JOB${state.craftingQueue.length === 1 ? '' : 'S'} QUEUED`;
-
-            if (state.craftingQueue.length === 0) {
-                listContainer.innerHTML = `<div class="text-gray-600 italic text-[11px]">No active torpedo or hull repair jobs in progress.</div>`;
-                return;
-            }
-
-            listContainer.innerHTML = state.craftingQueue.map(job => {
-                let colorClass = 'text-lcars-cyan';
-                if (job.kind === 'repair') colorClass = 'text-lcars-orange';
-                else if (job.type === 'photon') colorClass = 'text-lcars-red';
-
-                return `
-                    <div class="flex justify-between items-center bg-neutral-900 px-2 py-1 rounded border border-neutral-800">
-                        <span class="${colorClass} font-bold">${job.name}</span>
-                        <span class="text-lcars-yellow font-mono text-[11px]">${job.remainingCycles} CYCLE${job.remainingCycles === 1 ? '' : 'S'} LEFT</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        /* ===================================================================
-           WEB AUDIO API SOUND SYNTHESIZER
-           =================================================================== */
-        function initAudioContext() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
+        const soundEngine = new LcarsAudioEngine();
 
         function toggleAudioMute() {
-            audioMuted = !audioMuted;
+            soundEngine.muted = !soundEngine.muted;
             const btn = document.getElementById('btn-audio-mute');
-            if (audioMuted) {
-                btn.className = "lcars-pill px-3 py-2 text-xs font-bold bg-neutral-800 text-gray-400";
-                btn.innerHTML = `<span id="mute-icon">🔇</span> AUDIO: OFF`;
-                if (warpHumActive) stopWarpHum();
-                stopRedAlertKlaxon();
+            if (btn) btn.innerText = soundEngine.muted ? "🔇 AUDIO: OFF" : "🔊 AUDIO: ON";
+        }
+
+        /* REFRESH UI CROSS-PAGE DATA SYNC */
+        function updateAllUI() {
+            // Update Cycle Counters across all screens
+            document.getElementById('main-menu-cycle').innerText = shipState.cycle;
+            document.getElementById('overview-cycle-display').innerText = shipState.cycle;
+            document.getElementById('ops-cycle-header').innerText = shipState.cycle;
+
+            // Update Resource Monitors across all screens
+            document.getElementById('overview-rmats').innerText = shipState.resources.rmats;
+            document.getElementById('overview-torps').innerText = shipState.resources.photons + shipState.resources.quantums;
+            document.getElementById('overview-hull').innerText = `${shipState.hullIntegrity}%`;
+
+            document.getElementById('ops-rmats-val').innerText = shipState.resources.rmats;
+            document.getElementById('ops-photons-val').innerText = shipState.resources.photons;
+            document.getElementById('ops-quantums-val').innerText = shipState.resources.quantums;
+            document.getElementById('ops-hull-val').innerText = `${shipState.hullIntegrity}%`;
+            document.getElementById('ops-hull-bar').style.width = `${shipState.hullIntegrity}%`;
+
+            // Modal sync
+            const mP = document.getElementById('modal-photons');
+            if (mP) mP.innerText = shipState.resources.photons;
+            const mQ = document.getElementById('modal-quantums');
+            if (mQ) mQ.innerText = shipState.resources.quantums;
+            const mR = document.getElementById('modal-rmats');
+            if (mR) mR.innerText = shipState.resources.rmats;
+        }
+
+        /* ACTIONS & FABRICATION */
+        function executePhaseCycles(count) {
+            const num = count || parseInt(document.getElementById('phaseCycleInput').value) || 1;
+            shipState.cycle += num;
+            soundEngine.playBeep(880);
+            updateAllUI();
+        }
+
+        function quickSetCycles(val) {
+            document.getElementById('phaseCycleInput').value = val;
+        }
+
+        function fabricateTorpedoes(qty) {
+            const costPerUnit = 10;
+            const totalCost = qty * costPerUnit;
+            if (shipState.resources.rmats >= totalCost) {
+                shipState.resources.rmats -= totalCost;
+                shipState.resources.photons += qty;
+                soundEngine.playBeep(900);
+                updateAllUI();
             } else {
-                btn.className = "lcars-pill px-3 py-2 text-xs font-bold bg-lcars-lavender text-black";
-                btn.innerHTML = `<span id="mute-icon">🔊</span> AUDIO: ON`;
-                playAudioSound('click');
-                if (state.alertCondition === 'red' && !state.klaxonSilenced) {
-                    startRedAlertKlaxon();
-                }
+                alert("INSUFFICIENT R-MATS FOR TORPEDO FABRICATION!");
             }
         }
 
-        function playAudioSound(type) {
-            if (audioMuted) return;
-            initAudioContext();
-
-            const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'click') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, now);
-                osc.frequency.exponentialRampToValueAtTime(440, now + 0.05);
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.05);
-                osc.start(now);
-                osc.stop(now + 0.05);
-            } else if (type === 'chirp') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1200, now);
-                osc.frequency.setValueAtTime(1600, now + 0.04);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.08);
-                osc.start(now);
-                osc.stop(now + 0.08);
-            } else if (type === 'warn') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.setValueAtTime(250, now + 0.15);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
-            } else if (type === 'upgrade') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
-            } else if (type === 'photon') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.35);
-                osc.start(now);
-                osc.stop(now + 0.35);
-            } else if (type === 'quantum') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(1400, now);
-                osc.frequency.exponentialRampToValueAtTime(200, now + 0.25);
-                gain.gain.setValueAtTime(0.25, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
+        function fireTorpedo(type) {
+            if (type === 'photon' && shipState.resources.photons > 0) {
+                shipState.resources.photons--;
+                soundEngine.playBeep(300, 'sawtooth', 0.2);
+                updateAllUI();
             }
         }
 
-        function triggerComputerChirp() {
-            playAudioSound('chirp');
+        function renderSchematics() {
+            const group = document.getElementById('rooms-group');
+            if (!group) return;
+            group.innerHTML = '';
+            shipState.rooms.forEach(room => {
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', room.x); rect.setAttribute('y', room.y);
+                rect.setAttribute('width', room.w); rect.setAttribute('height', room.h);
+                rect.setAttribute('rx', 4);
+                rect.setAttribute('class', `status-${room.status.toLowerCase()} cursor-pointer`);
+                rect.addEventListener('click', () => {
+                    soundEngine.playBeep(850);
+                    if (room.special === 'bridge') openModal('bridgeModal');
+                    else if (room.special === 'science') openModal('scienceModal');
+                    else if (room.special === 'engineering') openModal('engineeringModal');
+                    else if (room.special === 'torpedo') openModal('torpedoModal');
+                    else if (room.special === 'shuttle') openModal('shuttleModal');
+                });
+                group.appendChild(rect);
+            });
         }
 
-        /* Red Alert Klaxon Synthesizer */
-        function playSingleKlaxonCycle() {
-            if (audioMuted || state.klaxonSilenced || state.alertCondition !== 'red') return;
-            initAudioContext();
+        /* VIEW NAVIGATION */
+        function switchView(viewName) {
+            soundEngine.playBeep(800);
+            document.getElementById('view-main-menu').classList.add('hidden');
+            document.getElementById('view-overview').classList.add('hidden');
+            document.getElementById('view-operations').classList.add('hidden');
+            document.getElementById('view-padd').classList.add('hidden');
 
-            const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = 'sawtooth';
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.frequency.setValueAtTime(480, now);
-            osc.frequency.linearRampToValueAtTime(740, now + 0.6);
-
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.linearRampToValueAtTime(0, now + 0.7);
-
-            osc.start(now);
-            osc.stop(now + 0.7);
-        }
-
-        function startRedAlertKlaxon() {
-            stopRedAlertKlaxon();
-            if (audioMuted || state.klaxonSilenced) return;
-
-            playSingleKlaxonCycle();
-            klaxonTimer = setInterval(() => {
-                playSingleKlaxonCycle();
-            }, 1200);
-        }
-
-        function stopRedAlertKlaxon() {
-            if (klaxonTimer) {
-                clearInterval(klaxonTimer);
-                klaxonTimer = null;
+            if (viewName === 'operations') document.getElementById('view-operations').classList.remove('hidden');
+            else if (viewName === 'overview') document.getElementById('view-overview').classList.remove('hidden');
+            else if (viewName === 'padd') {
+                document.getElementById('view-padd').classList.remove('hidden');
+                document.getElementById('view-padd').classList.add('flex');
+                renderPadd();
             }
+            else document.getElementById('view-main-menu').classList.remove('hidden');
+
+            updateAllUI();
         }
 
-        function toggleSilenceKlaxon() {
-            state.klaxonSilenced = !state.klaxonSilenced;
-            saveState();
-            renderSilenceKlaxonButton();
-
-            if (state.klaxonSilenced) {
-                stopRedAlertKlaxon();
-                logAction('Red Alert audio klaxon muted by command.');
-            } else {
-                startRedAlertKlaxon();
-                logAction('Red Alert audio klaxon unmuted.');
-            }
+        /* CAPTAIN'S PADD LOGIC */
+        function switchPaddTab(tabId) {
+            soundEngine.playBeep();
+            document.querySelectorAll('#view-padd .tab-view').forEach(view => view.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
         }
 
-        function renderSilenceKlaxonButton() {
-            const btn = document.getElementById('btn-silence-klaxon');
-            const icon = document.getElementById('klaxon-icon');
-            const txt = document.getElementById('klaxon-text');
-
-            if (state.alertCondition === 'red') {
-                btn.classList.remove('hidden');
-                if (state.klaxonSilenced) {
-                    btn.className = "lcars-pill px-3 py-1.5 text-xs font-bold bg-neutral-800 text-lcars-red border border-lcars-red flex items-center gap-1 hover:brightness-125";
-                    icon.innerText = "🔇";
-                    txt.innerText = "UNMUTE KLAXON";
-                } else {
-                    btn.className = "lcars-pill px-3 py-1.5 text-xs font-bold bg-lcars-red text-black animate-pulse flex items-center gap-1 hover:brightness-125";
-                    icon.innerText = "🚨";
-                    txt.innerText = "SILENCE KLAXON";
-                }
-            } else {
-                btn.classList.add('hidden');
-            }
+        function renderPadd() {
+            document.getElementById('quick-name').innerText = character.name;
+            document.getElementById('quick-rank').innerText = character.rank;
+            document.getElementById('quick-hp').innerText = `${character.vitals.currentHp}/${character.vitals.maxHp}`;
+            renderAttributesPadd();
+            renderDisciplinesPadd();
+            renderInventoryPadd();
+            populateRollSelects();
+            renderLogsPadd();
         }
 
-        function toggleWarpHum() {
-            if (audioMuted) return;
-            initAudioContext();
-            const btn = document.getElementById('btn-warp-hum');
-
-            if (!warpHumActive) {
-                humOscillator = audioCtx.createOscillator();
-                humGain = audioCtx.createGain();
-
-                humOscillator.type = 'sine';
-                humOscillator.frequency.setValueAtTime(60, audioCtx.currentTime);
-                humGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-
-                humOscillator.connect(humGain);
-                humGain.connect(audioCtx.destination);
-
-                humOscillator.start();
-                warpHumActive = true;
-                btn.className = "lcars-pill px-3 py-2 text-xs font-bold bg-lcars-cyan text-black animate-pulse";
-                btn.innerText = "CORE HUM: ON";
-            } else {
-                stopWarpHum();
-            }
-        }
-
-        function stopWarpHum() {
-            if (humOscillator) {
-                humOscillator.stop();
-                humOscillator.disconnect();
-                humOscillator = null;
-            }
-            warpHumActive = false;
-            const btn = document.getElementById('btn-warp-hum');
-            btn.className = "lcars-pill px-3 py-2 text-xs font-bold bg-lcars-deeporange text-black";
-            btn.innerText = "CORE HUM: OFF";
-        }
-
-        /* ===================================================================
-           ALERT CONDITIONS & THEMES
-           =================================================================== */
-        function setAlertCondition(cond) {
-            if (state.alertCondition === cond) return;
-            state.alertCondition = cond;
-
-            if (cond !== 'red') {
-                stopRedAlertKlaxon();
-            }
-
-            saveState();
-            applyAlertStyle();
-            playAudioSound('chirp');
-
-            if (cond === 'red' && !state.klaxonSilenced) {
-                startRedAlertKlaxon();
-            }
-
-            logAction(`Ship Alert status changed to ${cond.toUpperCase()} ALERT.`);
-        }
-
-        function applyAlertStyle() {
-            const body = document.getElementById('lcars-body');
-            const container = document.getElementById('main-container');
-            const statusText = document.getElementById('system-status-text');
-
-            const btnNormal = document.getElementById('btn-alert-normal');
-            const btnYellow = document.getElementById('btn-alert-yellow');
-            const btnRed = document.getElementById('btn-alert-red');
-
-            body.classList.remove('theme-yellow-alert', 'theme-red-alert');
-            container.classList.remove('alert-red-active');
-
-            btnNormal.className = "lcars-pill px-3 py-1 text-xs font-bold bg-neutral-800 text-lcars-cyan hover:brightness-110";
-            btnYellow.className = "lcars-pill px-3 py-1 text-xs font-bold bg-neutral-800 text-lcars-yellow hover:brightness-110";
-            btnRed.className = "lcars-pill px-3 py-1 text-xs font-bold bg-neutral-800 text-lcars-red hover:brightness-110";
-
-            if (state.alertCondition === 'red') {
-                body.classList.add('theme-red-alert');
-                container.classList.add('alert-red-active');
-                btnRed.className = "lcars-pill px-3 py-1 text-xs font-bold bg-lcars-red text-black hover:brightness-110";
-                statusText.innerText = "RED ALERT - COMBAT STATION";
-                statusText.className = "text-xl text-lcars-red font-bold animate-pulse";
-            } else if (state.alertCondition === 'yellow') {
-                body.classList.add('theme-yellow-alert');
-                btnYellow.className = "lcars-pill px-3 py-1 text-xs font-bold bg-[#8B6508] text-black hover:brightness-110";
-                statusText.innerText = "YELLOW ALERT - CAUTION";
-                statusText.className = "text-xl text-lcars-yellow font-bold";
-            } else {
-                btnNormal.className = "lcars-pill px-3 py-1 text-xs font-bold bg-lcars-cyan text-black hover:brightness-110";
-                statusText.innerText = "CONDITION GREEN - NOMINAL";
-                statusText.className = "text-xl text-black font-bold";
-            }
-
-            renderSilenceKlaxonButton();
-        }
-
-        /* ===================================================================
-           HULL INTEGRITY TRACKER
-           =================================================================== */
-        function updateHull(val) {
-            let numeric = parseInt(val);
-            if (isNaN(numeric)) numeric = 0;
-            numeric = Math.max(0, Math.min(100, numeric));
-
-            const prev = state.hull;
-            state.hull = numeric;
-            saveState();
-            renderHull();
-
-            if (prev !== numeric) {
-                playAudioSound(numeric < prev ? 'warn' : 'click');
-            }
-        }
-
-        function adjustHull(delta) {
-            updateHull(state.hull + delta);
-            logAction(`Hull integrity modified by ${delta > 0 ? '+' : ''}${delta}%. Current: ${state.hull}%`);
-        }
-
-        function renderHull() {
-            const h = state.hull;
-            document.getElementById('hull-percentage-text').innerText = `${h}%`;
-            document.getElementById('hull-range').value = h;
-            document.getElementById('hull-number').value = h;
-
-            const bar = document.getElementById('hull-bar');
-            bar.style.width = `${h}%`;
-
-            const badge = document.getElementById('hull-status-badge');
-            const shipBody = document.getElementById('ship-body');
-            const deflector = document.getElementById('schematic-deflector');
-
-            if (h > 75) {
-                bar.className = "h-full bg-lcars-cyan rounded-full transition-all duration-300";
-                badge.innerText = "INTEGRITY OPTIMAL";
-                badge.className = "px-3 py-0.5 rounded-full text-xs font-bold bg-lcars-cyan text-black";
-                shipBody.setAttribute('stroke', '#66CCCC');
-                deflector.setAttribute('fill', '#FF9900');
-            } else if (h > 35) {
-                bar.className = "h-full bg-lcars-yellow rounded-full transition-all duration-300";
-                badge.innerText = "HULL STRESS WARNING";
-                badge.className = "px-3 py-0.5 rounded-full text-xs font-bold bg-lcars-yellow text-black";
-                shipBody.setAttribute('stroke', '#FFCC00');
-                deflector.setAttribute('fill', '#FF6600');
-            } else {
-                bar.className = "h-full bg-lcars-red rounded-full transition-all duration-300 animate-pulse";
-                badge.innerText = "CRITICAL HULL BREACH RISK";
-                badge.className = "px-3 py-0.5 rounded-full text-xs font-bold bg-lcars-red text-black animate-pulse";
-                shipBody.setAttribute('stroke', '#FF3333');
-                deflector.setAttribute('fill', '#FF0000');
-            }
-        }
-
-        /* ===================================================================
-           CREW COMPLEMENT TRACKER
-           =================================================================== */
-        function adjustCrew(delta) {
-            state.crew.current = Math.max(0, Math.min(state.crew.max, state.crew.current + delta));
-            saveState();
-            renderCrew();
-            renderFoodAutonomyForecast();
-
-            playAudioSound(delta > 0 ? 'click' : 'warn');
-            logAction(`Crew complement altered by ${delta > 0 ? '+' : ''}${delta}. New Count: ${state.crew.current}/${state.crew.max}`);
-        }
-
-        function renderCrew() {
-            const current = state.crew.current;
-            const max = state.crew.max;
-            const pct = Math.round((current / max) * 100);
-
-            document.getElementById('crew-count-display').innerText = `${current} / ${max}`;
-            document.getElementById('stat-sidebar-crew').innerText = `${current} / ${max}`;
-
-            const bar = document.getElementById('crew-bar');
-            bar.style.width = `${pct}%`;
-
-            const statusText = document.getElementById('crew-status-text');
-            if (pct >= 75) {
-                statusText.innerText = "OPTIMAL MANNING";
-                statusText.className = "text-lcars-cyan font-bold";
-                bar.className = "h-full bg-lcars-lavender rounded-full transition-all duration-300";
-            } else if (pct >= 40) {
-                statusText.innerText = "REDUCED CAPACITY";
-                statusText.className = "text-lcars-yellow font-bold";
-                bar.className = "h-full bg-lcars-yellow rounded-full transition-all duration-300";
-            } else {
-                statusText.innerText = "CRITICAL MANPOWER LOSS";
-                statusText.className = "text-lcars-red font-bold animate-pulse";
-                bar.className = "h-full bg-lcars-red rounded-full transition-all duration-300 animate-pulse";
-            }
-        }
-
-        /* ===================================================================
-           ORDNANCE / TORPEDO TRACKER
-           =================================================================== */
-        function fireTorpedo(type, amount = 1) {
-            const torp = state.torpedoes[type];
-            if (!torp) return;
-
-            if (torp.current >= amount) {
-                torp.current -= amount;
-                saveState();
-                renderTorpedoes();
-                playAudioSound(type === 'photon' ? 'photon' : 'quantum');
-                logAction(`Fired ${amount} ${torp.name}. Remaining: ${torp.current}/${torp.max}`);
-            } else {
-                playAudioSound('warn');
-                logAction(`INSUFFICIENT ORDNANCE: Cannot fire ${amount} ${torp.name}. Reserves depleted!`);
-            }
-        }
-
-        function adjustTorpedo(type, delta) {
-            const torp = state.torpedoes[type];
-            if (!torp) return;
-
-            torp.current = Math.max(0, Math.min(torp.max, torp.current + delta));
-            saveState();
-            renderTorpedoes();
-            playAudioSound('click');
-            logAction(`Replenished ${torp.name} by +${delta}. Count: ${torp.current}/${torp.max}`);
-        }
-
-        function renderTorpedoes() {
-            const pCurrent = state.torpedoes.photon.current;
-            const pMax = state.torpedoes.photon.max;
-            const qCurrent = state.torpedoes.quantum.current;
-            const qMax = state.torpedoes.quantum.max;
-
-            const totalCurrent = pCurrent + qCurrent;
-            const totalMax = pMax + qMax;
-
-            document.getElementById('torpedo-total-display').innerText = `${totalCurrent} / ${totalMax}`;
-            document.getElementById('photon-count-text').innerText = `${pCurrent} / ${pMax}`;
-            document.getElementById('quantum-count-text').innerText = `${qCurrent} / ${qMax}`;
-
-            document.getElementById('photon-bar').style.width = `${(pCurrent / pMax) * 100}%`;
-            document.getElementById('quantum-bar').style.width = `${(qCurrent / qMax) * 100}%`;
-        }
-
-        /* ===================================================================
-           PRIMARY RESOURCE MANAGEMENT & FOOD AUTONOMY FORECAST
-           =================================================================== */
-        function adjustResource(key, delta) {
-            const res = state.resources[key];
-            if (!res) return;
-
-            const oldVal = res.current;
-            res.current = Math.max(0, Math.min(res.max, res.current + delta));
-            saveState();
-            renderResources();
-            renderFoodAutonomyForecast();
-
-            playAudioSound(delta > 0 ? 'click' : 'chirp');
-            logAction(`Adjusted ${res.name} by ${delta > 0 ? '+' : ''}${delta} ${res.unit}. New Level: ${res.current}/${res.max}`);
-
-            const pct = (res.current / res.max) * 100;
-            if (pct < 15 && (oldVal / res.max * 100) >= 15) {
-                playAudioSound('warn');
-                logAction(`WARNING: Low reserves detected for ${res.name} (${pct.toFixed(1)}%)!`);
-            }
-        }
-
-        function renderFoodAutonomyForecast() {
-            const currentFood = state.resources.food.current;
-            const crewNeeded = Math.max(1, state.crew.current);
-            const cyclesRemaining = (currentFood / crewNeeded).toFixed(1);
-
-            document.getElementById('food-burn-rate').innerText = `${crewNeeded} UNITS / CYCLE`;
-            document.getElementById('food-cycles-remaining').innerText = `${cyclesRemaining} CYCLES REMAINING`;
-
-            const warningBanner = document.getElementById('food-warning-alert');
-            if (parseFloat(cyclesRemaining) < 2.0) {
-                warningBanner.classList.remove('hidden');
-            } else {
-                warningBanner.classList.add('hidden');
-            }
-        }
-
-        function renderResources() {
-            const container = document.getElementById('resources-container');
+        function renderAttributesPadd() {
+            const container = document.getElementById('attributes-container');
+            if (!container) return;
             container.innerHTML = '';
-
-            Object.keys(state.resources).forEach(key => {
-                const res = state.resources[key];
-                const pct = Math.round((res.current / res.max) * 100);
-                const isCritical = pct < 15;
-
-                const card = document.createElement('div');
-                card.className = `bg-black p-3 rounded-lg border ${isCritical ? 'border-lcars-red' : 'border-neutral-800'} flex flex-col justify-between`;
-
-                card.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-sm tracking-wider lcars-accent-text" style="color: ${res.color}">${res.name}</span>
-                            <span class="text-xs font-mono ${isCritical ? 'text-lcars-red animate-pulse font-bold' : 'text-gray-400'}">
-                                ${res.current} / ${res.max} ${res.unit} (${pct}%)
-                            </span>
-                        </div>
-                        <div class="w-full bg-neutral-900 h-3 rounded-full overflow-hidden p-0.5 border border-neutral-800 mb-3">
-                            <div class="h-full rounded-full transition-all duration-300 ${isCritical ? 'resource-critical' : ''}" 
-                                 style="width: ${pct}%; background-color: ${isCritical ? '#FF3333' : res.color}"></div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-6 gap-1">
-                        <button onclick="adjustResource('${key}', -100)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-[10px] py-1">-100</button>
-                        <button onclick="adjustResource('${key}', -10)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-[10px] py-1">-10</button>
-                        <button onclick="adjustResource('${key}', -1)" class="lcars-pill bg-neutral-900 border border-neutral-700 text-gray-300 hover:bg-neutral-800 text-[10px] py-1">-1</button>
-                        <button onclick="adjustResource('${key}', 1)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-[10px] py-1">+1</button>
-                        <button onclick="adjustResource('${key}', 10)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-[10px] py-1">+10</button>
-                        <button onclick="adjustResource('${key}', 100)" class="lcars-pill bg-neutral-800 border border-neutral-600 text-white hover:bg-neutral-700 text-[10px] py-1">+100</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        /* Capacities Modal */
-        function openCapacitiesModal() {
-            playAudioSound('click');
-            const fieldsContainer = document.getElementById('capacity-modal-fields');
-            fieldsContainer.innerHTML = '';
-
-            Object.keys(state.resources).forEach(key => {
-                const res = state.resources[key];
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center gap-2";
-                div.innerHTML = `
-                    <label class="text-xs font-bold text-gray-300">${res.name} MAX (${res.unit}):</label>
-                    <input type="number" id="modal-cap-${key}" value="${res.max}" class="w-32 bg-black border border-lcars-purple rounded p-1 text-center font-mono text-lcars-yellow font-bold text-sm">
-                `;
-                fieldsContainer.appendChild(div);
-            });
-
-            document.getElementById('capacity-modal').classList.remove('hidden');
-        }
-
-        function closeCapacitiesModal() {
-            playAudioSound('click');
-            document.getElementById('capacity-modal').classList.add('hidden');
-        }
-
-        function saveCapacitiesModal() {
-            Object.keys(state.resources).forEach(key => {
-                const input = document.getElementById(`modal-cap-${key}`);
-                if (input) {
-                    const newMax = Math.max(1, parseInt(input.value) || 100);
-                    state.resources[key].max = newMax;
-                    if (state.resources[key].current > newMax) {
-                        state.resources[key].current = newMax;
-                    }
-                }
-            });
-            saveState();
-            renderResources();
-            renderFoodAutonomyForecast();
-            closeCapacitiesModal();
-            logAction('Reconfigured resource max capacities.');
-        }
-
-        /* ===================================================================
-           CAPTAIN XP & LEVEL SYSTEM (SIMPLIFIED 3/9)
-           =================================================================== */
-        function adjustXP(amount) {
-            const prevXP = state.xp;
-            state.xp = Math.max(0, state.xp + amount);
-            saveState();
-            renderXP();
-
-            const prevLevel = Math.min(9, Math.floor(prevXP / 1000) + 1);
-            const newLevel = Math.min(9, Math.floor(state.xp / 1000) + 1);
-
-            if (newLevel > prevLevel) {
-                playAudioSound('upgrade');
-                logAction(`PROMOTION / RANK LEVEL UP! Captain promoted to Level ${newLevel}!`);
-            } else {
-                playAudioSound(amount > 0 ? 'upgrade' : 'click');
-                logAction(`Captain earned ${amount > 0 ? '+' : ''}${amount} XP. Total: ${state.xp} XP.`);
+            for (const [key, value] of Object.entries(character.attributes)) {
+                container.innerHTML += `<div class="flex justify-between border-b border-gray-800 pb-0.5"><span class="text-amber-400 font-bold">${key}:</span><span class="text-white font-bold">${value}</span></div>`;
             }
         }
 
-        function renderXP() {
-            const rawLevel = Math.floor(state.xp / 1000) + 1;
-            const level = Math.min(9, rawLevel);
-            const isMax = level >= 9;
-
-            const currentLevelXP = isMax ? 1000 : (state.xp % 1000);
-            const xpPct = isMax ? 100 : ((currentLevelXP / 1000) * 100);
-
-            document.getElementById('captain-rank-display').innerText = `CAPTAIN • LEVEL ${level} / 9`;
-            document.getElementById('total-xp-display').innerText = state.xp;
-
-            if (isMax) {
-                document.getElementById('xp-progress-subtext').innerText = "MAXIMUM CAPTAIN RANK LEVEL REACHED";
-                document.getElementById('xp-next-level-sub').innerText = "CAP LEVEL 9 REACHED";
-            } else {
-                document.getElementById('xp-progress-subtext').innerText = `${currentLevelXP} / 1000 XP TO LEVEL ${level + 1}`;
-                document.getElementById('xp-next-level-sub').innerText = `NEXT RANK: ${level * 1000} XP`;
-            }
-
-            document.getElementById('xp-bar').style.width = `${xpPct}%`;
-        }
-
-        /* ===================================================================
-           CREW MORALE METER
-           =================================================================== */
-        function adjustMorale(delta) {
-            state.morale.current = Math.max(0, Math.min(state.morale.max, state.morale.current + delta));
-            saveState();
-            renderMorale();
-
-            playAudioSound(delta > 0 ? 'click' : 'warn');
-            logAction(`Crew morale adjusted by ${delta > 0 ? '+' : ''}${delta}. New Morale: ${state.morale.current}/${state.morale.max}`);
-        }
-
-        function setMoralePreset(val) {
-            state.morale.current = Math.max(0, Math.min(state.morale.max, val));
-            saveState();
-            renderMorale();
-            playAudioSound('chirp');
-            logAction(`Crew morale set to preset level ${val}/${state.morale.max}.`);
-        }
-
-        function renderMorale() {
-            const current = state.morale.current;
-            const max = state.morale.max;
-            const pct = Math.round((current / max) * 100);
-
-            document.getElementById('morale-value-display').innerText = `${current} / ${max}`;
-
-            const bar = document.getElementById('morale-bar');
-            bar.style.width = `${pct}%`;
-
-            const statusText = document.getElementById('morale-status-text');
-            if (pct >= 70) {
-                statusText.innerText = "OPTIMAL MORALE - HIGH OPERATIONAL EFFICIENCY";
-                statusText.className = "text-lcars-cyan font-bold";
-                bar.className = "h-full bg-lcars-cyan rounded-full transition-all duration-300";
-            } else if (pct >= 40) {
-                statusText.innerText = "STEADY MORALE - ACCEPTABLE DUTY RENDERING";
-                statusText.className = "text-lcars-yellow font-bold";
-                bar.className = "h-full bg-lcars-yellow rounded-full transition-all duration-300";
-            } else {
-                statusText.innerText = "LOW MORALE - CRITICAL SHIFT DISSATISFACTION";
-                statusText.className = "text-lcars-red font-bold animate-pulse";
-                bar.className = "h-full bg-lcars-red rounded-full transition-all duration-300 animate-pulse";
+        function renderDisciplinesPadd() {
+            const container = document.getElementById('disciplines-container');
+            if (!container) return;
+            container.innerHTML = '';
+            for (const [key, value] of Object.entries(character.disciplines)) {
+                container.innerHTML += `<div class="flex justify-between border-b border-gray-800 pb-0.5"><span class="text-purple-300 font-bold">${key}:</span><span class="text-white font-bold">${value}</span></div>`;
             }
         }
 
-        /* ===================================================================
-           VOICE CAPTAIN'S LOG & SPEECH TRANSCRIBER
-           =================================================================== */
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                speechRecognizer = new SpeechRecognition();
-                speechRecognizer.continuous = true;
-                speechRecognizer.interimResults = true;
-                speechRecognizer.lang = 'en-US';
-
-                speechRecognizer.onresult = (event) => {
-                    let transcript = '';
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        transcript += event.results[i][0].transcript;
-                    }
-                    document.getElementById('speech-live-text').innerText = `"${transcript}"`;
-                    document.getElementById('log-input').value = transcript;
-                };
-
-                speechRecognizer.onerror = (event) => {
-                    console.warn("Speech recognition error:", event.error);
-                    stopVoiceRecording();
-                    logAction(`VOICE LOG ERROR: ${event.error}`);
-                };
-
-                speechRecognizer.onend = () => {
-                    if (isRecordingVoice) {
-                        stopVoiceRecording();
-                    }
-                };
-            } else {
-                console.log("Web Speech API not supported in this browser.");
-            }
+        function renderInventoryPadd() {
+            const grid = document.getElementById('inventory-grid');
+            if (!grid) return;
+            grid.innerHTML = character.inventory.map(item => `
+                <div class="bg-gray-900 border border-gray-800 p-2 rounded">
+                    <div class="font-bold text-amber-400">${item.name}</div>
+                    <div class="text-[10px] text-gray-400">${item.desc}</div>
+                </div>
+            `).join('');
         }
 
-        function toggleVoiceRecording() {
-            if (!speechRecognizer) {
-                alert("Speech recognition is not supported by your browser. Please type your entry manually.");
-                return;
-            }
+        function populateRollSelects() {
+            const attrSelect = document.getElementById('roll-attr-select');
+            const discSelect = document.getElementById('roll-disc-select');
+            if (!attrSelect || !discSelect) return;
 
-            if (!isRecordingVoice) {
-                startVoiceRecording();
-            } else {
-                stopVoiceRecording();
-            }
+            attrSelect.innerHTML = Object.keys(character.attributes).map(k => `<option value="${k}">${k} (${character.attributes[k]})</option>`).join('');
+            discSelect.innerHTML = Object.keys(character.disciplines).map(k => `<option value="${k}">${k} (${character.disciplines[k]})</option>`).join('');
         }
 
-        function startVoiceRecording() {
-            try {
-                speechRecognizer.start();
-                isRecordingVoice = true;
-                playAudioSound('chirp');
+        function executeTaskRoll() {
+            soundEngine.playBeep();
+            const attrKey = document.getElementById('roll-attr-select').value;
+            const discKey = document.getElementById('roll-disc-select').value;
+            const tn = character.attributes[attrKey] + character.disciplines[discKey];
 
-                const btn = document.getElementById('btn-voice-rec');
-                btn.className = "lcars-pill btn-recording text-black px-3 py-1 text-xs font-bold flex items-center gap-1.5";
-                document.getElementById('rec-dot').innerText = "🔴";
-                document.getElementById('rec-status-text').innerText = "STOP RECORDING";
-                document.getElementById('transcribe-status-banner').classList.remove('hidden');
-            } catch (e) {
-                console.error("Speech Rec Start Error", e);
+            let successes = 0;
+            let rolls = [];
+            for (let i = 0; i < 2; i++) {
+                const roll = Math.floor(Math.random() * 20) + 1;
+                const s = roll <= tn ? 1 : 0;
+                successes += s;
+                rolls.push(roll);
             }
+
+            document.getElementById('roll-result-container').innerHTML = `
+                <div class="text-amber-400 font-bold text-base">${successes} SUCCESSES (TN: ${tn})</div>
+                <div class="text-xs text-gray-400">ROLLS: [${rolls.join(', ')}]</div>
+            `;
         }
 
-        function stopVoiceRecording() {
-            if (speechRecognizer) {
-                speechRecognizer.stop();
-            }
-            isRecordingVoice = false;
-            playAudioSound('click');
-
-            const btn = document.getElementById('btn-voice-rec');
-            btn.className = "lcars-pill bg-lcars-red text-black px-3 py-1 text-xs font-bold flex items-center gap-1.5 hover:brightness-110";
-            document.getElementById('rec-dot').innerText = "🎙️";
-            document.getElementById('rec-status-text').innerText = "RECORD VOICE LOG";
-            document.getElementById('transcribe-status-banner').classList.add('hidden');
-
-            const transcribedText = document.getElementById('log-input').value.trim();
-            if (transcribedText) {
-                logAction(`VOICE CAPTAIN LOG: ${transcribedText}`);
-                document.getElementById('log-input').value = '';
-            }
-        }
-
-        function logAction(msg) {
-            const timestamp = new Date().toISOString().substring(11, 19) + " STD";
-            const entry = `[${timestamp}] ${msg}`;
-            state.logs.unshift(entry);
-
-            if (state.logs.length > 50) state.logs.pop();
-
-            saveState();
-            renderLogs();
-        }
-
-        function handleLogSubmit(e) {
-            e.preventDefault();
-            const input = document.getElementById('log-input');
-            const val = input.value.trim();
-            if (val) {
-                logAction(`CAPTAIN LOG: ${val}`);
+        function addManualLogEntry() {
+            const input = document.getElementById('manual-log-input');
+            if (input && input.value.trim()) {
+                soundEngine.playBeep();
+                character.logs.unshift(`[${new Date().toLocaleTimeString()}] ${input.value.trim()}`);
                 input.value = '';
-                playAudioSound('chirp');
+                renderLogsPadd();
             }
         }
 
-        function clearLogs() {
-            if (confirm("Clear operational log history?")) {
-                state.logs = [];
-                saveState();
-                renderLogs();
-                playAudioSound('click');
+        function renderLogsPadd() {
+            const container = document.getElementById('log-stream-container');
+            if (container) {
+                container.innerHTML = character.logs.map(l => `<div class="text-amber-400/90">${l}</div>`).join('');
             }
         }
 
-        function renderLogs() {
-            const container = document.getElementById('log-container');
-            if (state.logs.length === 0) {
-                container.innerHTML = `<div class="text-gray-600 italic">No operational logs recorded.</div>`;
-                return;
-            }
-            container.innerHTML = state.logs.map(log => `<div class="text-lcars-cyan border-b border-neutral-900/50 pb-0.5">${log}</div>`).join('');
+        function openModal(id) {
+            soundEngine.playBeep(700);
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.querySelectorAll('.modal-content').forEach(e => e.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            updateAllUI();
         }
 
-        /* ===================================================================
-           GLOBAL RENDER MASTER
-           =================================================================== */
-        function renderAll() {
-            document.getElementById('current-cycle-display').innerText = state.currentCycle;
-            applyAlertStyle();
-            renderHull();
-            renderCrew();
-            renderMorale();
-            renderTorpedoes();
-            renderCraftingQueue();
-            renderResources();
-            renderFoodAutonomyForecast();
-            renderXP();
-            renderLogs();
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
         }
+
+        window.onload = function() {
+            renderSchematics();
+            updateAllUI();
+        };
     </script>
 </body>
 </html>
